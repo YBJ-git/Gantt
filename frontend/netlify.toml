@@ -1,0 +1,36 @@
+# 빌드 설정
+[build]
+  command = "npm run build"
+  publish = "build"
+
+# 환경 변수 설정
+[build.environment]
+  NODE_VERSION = "16"
+  NPM_VERSION = "8"
+  CI = "false"
+
+# 리다이렉트 설정
+[[redirects]]
+  # SPA 라우팅을 위한 설정
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# 헤더 설정
+[[headers]]
+  # 모든 페이지에 적용할 헤더
+  for = "/*"
+    [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+
+# 배포 컨텍스트별 설정
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+[context.deploy-preview]
+  environment = { NODE_ENV = "staging" }
+
+[context.branch-deploy]
+  environment = { NODE_ENV = "development" }
