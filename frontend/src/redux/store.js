@@ -1,24 +1,50 @@
-/**
- * Redux 스토어 설정
- */
-import { createStore, applyMiddleware, compose } from 'redux';
-import thunk from 'redux-thunk';
-import rootReducer from './reducers';
+import { createStore } from 'redux';
 
-// Redux DevTools 설정
-const composeEnhancers = 
-  (process.env.NODE_ENV === 'development' && 
-   typeof window !== 'undefined' && 
-   window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) || 
-  compose;
+// 초기 상태
+const initialState = {
+  tasks: [],
+  resources: [],
+  projects: [],
+  ui: {
+    sidebarCollapsed: false,
+    darkMode: false,
+    loading: false
+  }
+};
 
-// 미들웨어 설정
-const middleware = [thunk];
+// 리듀서
+function rootReducer(state = initialState, action) {
+  switch (action.type) {
+    case 'TOGGLE_SIDEBAR':
+      return {
+        ...state,
+        ui: {
+          ...state.ui,
+          sidebarCollapsed: !state.ui.sidebarCollapsed
+        }
+      };
+    case 'TOGGLE_DARK_MODE':
+      return {
+        ...state,
+        ui: {
+          ...state.ui,
+          darkMode: !state.ui.darkMode
+        }
+      };
+    case 'SET_LOADING':
+      return {
+        ...state,
+        ui: {
+          ...state.ui,
+          loading: action.payload
+        }
+      };
+    default:
+      return state;
+  }
+}
 
 // 스토어 생성
-const store = createStore(
-  rootReducer,
-  composeEnhancers(applyMiddleware(...middleware))
-);
+const store = createStore(rootReducer);
 
 export default store;
