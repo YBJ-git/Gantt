@@ -13,15 +13,10 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>작업 부하 최적화 시스템</title>
     <script>
-      // SPA의 경로 리디렉션을 위한 스크립트 추가
-      (function(){
-        const redirect = sessionStorage.redirect;
-        delete sessionStorage.redirect;
-        if (redirect && redirect !== location.href) {
-          history.replaceState(null, null, redirect);
-        }
-      })();
+      // SPA의 경로 리디렉션을 위한 스크립트
+      sessionStorage.redirect = location.href;
     </script>
+    <meta http-equiv="refresh" content="0;URL='/'">
   </head>
   <body>
     <noscript>이 애플리케이션을 실행하려면 JavaScript를 활성화해야 합니다.</noscript>

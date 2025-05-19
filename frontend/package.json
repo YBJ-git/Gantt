@@ -16,7 +16,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && cp netlify.toml build/ && echo '/* /index.html 200' > build/_redirects",
     "test": "react-scripts test",
     "test:integration": "react-scripts test --testPathPattern=src/tests/integration",
     "test:coverage": "react-scripts test --coverage",
