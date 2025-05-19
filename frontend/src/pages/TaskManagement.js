@@ -36,15 +36,13 @@ import {
   ApartmentOutlined
 } from '@ant-design/icons';
 import moment from 'moment';
-import { useSelector, useDispatch } from 'react-redux';
-// 실제 구현에서는 이러한 액션들이 있을 것
-// import { fetchTasks, createTask, updateTask, deleteTask } from '../redux/actions/taskActions';
+// SCSS 파일 임포트
 import './TaskManagement.scss';
 
-// 가정: 이러한 컴포넌트가 구현되어 있을 것
-import TaskGanttChart from '../components/feature/TaskManagement/TaskGanttChart';
-import TaskDependencyGraph from '../components/feature/TaskManagement/TaskDependencyGraph';
-import TaskKanbanBoard from '../components/feature/TaskManagement/TaskKanbanBoard';
+// Placeholder 컴포넌트 - 실제 구현 전까지 빈 컴포넌트로 대체
+const TaskGanttChart = () => <div>간트 차트 (데모용 플레이스홀더)</div>;
+const TaskDependencyGraph = () => <div>의존성 그래프 (데모용 플레이스홀더)</div>;
+const TaskKanbanBoard = () => <div>칸반 보드 (데모용 플레이스홀더)</div>;
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -52,7 +50,6 @@ const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
 
 const TaskManagement = () => {
-  const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -135,76 +132,6 @@ const TaskManagement = () => {
       progress: 100,
       dependencies: [],
       description: '데이터베이스 스키마 및 모델 설계.'
-    },
-    { 
-      id: 104, 
-      name: 'UI 디자인', 
-      resourceId: 4, 
-      projectId: 1,
-      startDate: '2025-05-05', 
-      endDate: '2025-05-18', 
-      workload: 30,
-      status: 'completed',
-      priority: 'medium',
-      progress: 100,
-      dependencies: [],
-      description: '웹사이트 UI 디자인 및 사용자 경험 설계.'
-    },
-    { 
-      id: 105, 
-      name: '테스트 자동화', 
-      resourceId: 6, 
-      projectId: 2,
-      startDate: '2025-05-15', 
-      endDate: '2025-05-30', 
-      workload: 38,
-      status: 'planned',
-      priority: 'low',
-      progress: 0,
-      dependencies: [102, 103],
-      description: '자동화된 테스트 환경 구축 및 테스트 케이스 작성.'
-    },
-    { 
-      id: 106, 
-      name: 'UX 개선', 
-      resourceId: 5, 
-      projectId: 2,
-      startDate: '2025-05-10', 
-      endDate: '2025-05-22', 
-      workload: 24,
-      status: 'in-progress',
-      priority: 'medium',
-      progress: 40,
-      dependencies: [104],
-      description: '사용자 경험 개선 및 인터페이스 최적화.'
-    },
-    { 
-      id: 107, 
-      name: 'API 개발', 
-      resourceId: 3, 
-      projectId: 3,
-      startDate: '2025-05-16', 
-      endDate: '2025-05-28', 
-      workload: 42,
-      status: 'planned',
-      priority: 'high',
-      progress: 0,
-      dependencies: [102, 103],
-      description: '외부 시스템 연동을 위한 API 개발.'
-    },
-    { 
-      id: 108, 
-      name: '통합 테스트', 
-      resourceId: 6, 
-      projectId: 3,
-      startDate: '2025-05-25', 
-      endDate: '2025-06-05', 
-      workload: 40,
-      status: 'planned',
-      priority: 'medium',
-      progress: 0,
-      dependencies: [101, 102, 107],
-      description: '시스템 통합 테스트 및 품질 보증.'
     }
   ];
   
@@ -262,9 +189,6 @@ const TaskManagement = () => {
   ];
   
   useEffect(() => {
-    // 실제 구현에서는 Redux 액션
-    // dispatch(fetchTasks());
-    
     // 더미 데이터 로드
     setTimeout(() => {
       setTasks(mockTasks);
@@ -358,9 +282,6 @@ const TaskManagement = () => {
         dependencies: values.dependencies || []
       };
       
-      // 실제 구현에서는 Redux 액션
-      // dispatch(createTask(newTask));
-      
       setTasks([...tasks, newTask]);
       message.success('작업이 생성되었습니다.');
     } else {
@@ -371,9 +292,6 @@ const TaskManagement = () => {
         endDate: values.endDate.format('YYYY-MM-DD'),
         dependencies: values.dependencies || []
       };
-      
-      // 실제 구현에서는 Redux 액션
-      // dispatch(updateTask(updatedTask));
       
       setTasks(tasks.map(task => 
         task.id === updatedTask.id ? updatedTask : task
@@ -393,9 +311,6 @@ const TaskManagement = () => {
       okType: 'danger',
       cancelText: '취소',
       onOk() {
-        // 실제 구현에서는 Redux 액션
-        // dispatch(deleteTask(taskId));
-        
         setTasks(tasks.filter(task => task.id !== taskId));
         message.success('작업이 삭제되었습니다.');
       }
@@ -410,7 +325,6 @@ const TaskManagement = () => {
   
   // 댓글 추가 핸들러
   const handleAddComment = (values) => {
-    // 실제 구현에서는 API 호출 후 상태 업데이트
     message.success('댓글이 추가되었습니다.');
   };
   
@@ -729,32 +643,19 @@ const TaskManagement = () => {
         
         {viewMode === 'gantt' && (
           <div className="gantt-view">
-            <TaskGanttChart 
-              tasks={filteredTasks}
-              resources={resources}
-            />
+            <TaskGanttChart />
           </div>
         )}
         
         {viewMode === 'kanban' && (
           <div className="kanban-view">
-            <TaskKanbanBoard 
-              tasks={filteredTasks}
-              resources={resources}
-              onTaskUpdate={(updatedTask) => {
-                setTasks(tasks.map(task => 
-                  task.id === updatedTask.id ? updatedTask : task
-                ));
-              }}
-            />
+            <TaskKanbanBoard />
           </div>
         )}
         
         {viewMode === 'dependency' && (
           <div className="dependency-view">
-            <TaskDependencyGraph 
-              tasks={filteredTasks}
-            />
+            <TaskDependencyGraph />
           </div>
         )}
       </Card>
@@ -762,7 +663,7 @@ const TaskManagement = () => {
       {/* 작업 추가/편집 모달 */}
       <Modal
         title={taskFormMode === 'create' ? '작업 추가' : '작업 편집'}
-        visible={taskModalVisible}
+        open={taskModalVisible}
         onCancel={() => setTaskModalVisible(false)}
         footer={null}
         width={700}
@@ -925,7 +826,7 @@ const TaskManagement = () => {
         placement="right"
         width={600}
         onClose={() => setTaskDetailDrawerVisible(false)}
-        visible={taskDetailDrawerVisible}
+        open={taskDetailDrawerVisible}
         extra={
           <Space>
             <Button 

@@ -1,6 +1,4 @@
 import React from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Card, Row, Col, Tag, Progress, Avatar } from 'antd';
 
 const TaskKanbanBoard = ({ tasks, resources, onTaskUpdate }) => {
@@ -10,11 +8,6 @@ const TaskKanbanBoard = ({ tasks, resources, onTaskUpdate }) => {
     { id: 'in-progress', title: '진행 중', color: '#1890ff' },
     { id: 'completed', title: '완료됨', color: '#52c41a' }
   ];
-  
-  // 드래그 앤 드롭 처리 (실제 구현에서는 react-dnd 사용)
-  const handleDragEnd = (result) => {
-    // 실제 구현에서 드래그 앤 드롭 처리
-  };
   
   // 우선순위에 따른 태그 색상 결정
   const getPriorityTag = (priority) => {
@@ -44,7 +37,7 @@ const TaskKanbanBoard = ({ tasks, resources, onTaskUpdate }) => {
   
   // 작업 카드 렌더링
   const renderTaskCard = (task) => {
-    const resource = resources.find(r => r.id === task.resourceId);
+    const resource = resources && resources.find(r => r.id === task.resourceId);
     
     return (
       <Card 
@@ -74,48 +67,46 @@ const TaskKanbanBoard = ({ tasks, resources, onTaskUpdate }) => {
   };
   
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="kanban-board">
-        <Row gutter={16}>
-          {columns.map(column => (
-            <Col span={8} key={column.id}>
+    <div className="kanban-board">
+      <Row gutter={16}>
+        {columns.map(column => (
+          <Col span={8} key={column.id}>
+            <div 
+              className="kanban-column"
+              style={{ 
+                backgroundColor: '#f5f5f5',
+                borderRadius: 4,
+                padding: '8px',
+                height: '100%'
+              }}
+            >
               <div 
-                className="kanban-column"
-                style={{ 
-                  backgroundColor: '#f5f5f5',
+                className="kanban-column-header"
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: column.color,
+                  color: '#fff',
                   borderRadius: 4,
-                  padding: '8px',
-                  height: '100%'
+                  marginBottom: 16,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
                 }}
               >
-                <div 
-                  className="kanban-column-header"
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: column.color,
-                    color: '#fff',
-                    borderRadius: 4,
-                    marginBottom: 16,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                >
-                  <span>{column.title}</span>
-                  <Tag>{tasks.filter(task => task.status === column.id).length}</Tag>
-                </div>
-                <div className="kanban-column-content">
-                  {tasks
-                    .filter(task => task.status === column.id)
-                    .map(task => renderTaskCard(task))
-                  }
-                </div>
+                <span>{column.title}</span>
+                <Tag>{tasks && tasks.filter(task => task.status === column.id).length}</Tag>
               </div>
-            </Col>
-          ))}
-        </Row>
-      </div>
-    </DndProvider>
+              <div className="kanban-column-content">
+                {tasks && tasks
+                  .filter(task => task.status === column.id)
+                  .map(task => renderTaskCard(task))
+                }
+              </div>
+            </div>
+          </Col>
+        ))}
+      </Row>
+    </div>
   );
 };
 
