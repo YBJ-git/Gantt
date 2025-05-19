@@ -1,13 +1,29 @@
-/**
- * 루트 리듀서
- */
 import { combineReducers } from 'redux';
-import loadOptimizationReducer from './loadOptimizationReducer';
+import dashboardReducer from './dashboardReducer';
 
-// 루트 리듀서 생성
 const rootReducer = combineReducers({
-  loadOptimization: loadOptimizationReducer
-  // 추가 리듀서 모듈이 있다면 여기에 추가
+  dashboard: dashboardReducer,
+  ui: (state = { sidebarCollapsed: false, darkMode: false, loading: false }, action) => {
+    switch (action.type) {
+      case 'TOGGLE_SIDEBAR':
+        return {
+          ...state,
+          sidebarCollapsed: !state.sidebarCollapsed
+        };
+      case 'TOGGLE_DARK_MODE':
+        return {
+          ...state,
+          darkMode: !state.darkMode
+        };
+      case 'SET_LOADING':
+        return {
+          ...state,
+          loading: action.payload
+        };
+      default:
+        return state;
+    }
+  }
 });
 
 export default rootReducer;

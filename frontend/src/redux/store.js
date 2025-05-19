@@ -1,50 +1,11 @@
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
+import rootReducer from './reducers';
 
-// 초기 상태
-const initialState = {
-  tasks: [],
-  resources: [],
-  projects: [],
-  ui: {
-    sidebarCollapsed: false,
-    darkMode: false,
-    loading: false
-  }
-};
-
-// 리듀서
-function rootReducer(state = initialState, action) {
-  switch (action.type) {
-    case 'TOGGLE_SIDEBAR':
-      return {
-        ...state,
-        ui: {
-          ...state.ui,
-          sidebarCollapsed: !state.ui.sidebarCollapsed
-        }
-      };
-    case 'TOGGLE_DARK_MODE':
-      return {
-        ...state,
-        ui: {
-          ...state.ui,
-          darkMode: !state.ui.darkMode
-        }
-      };
-    case 'SET_LOADING':
-      return {
-        ...state,
-        ui: {
-          ...state.ui,
-          loading: action.payload
-        }
-      };
-    default:
-      return state;
-  }
-}
-
-// 스토어 생성
-const store = createStore(rootReducer);
+// redux-thunk 미들웨어 적용
+const store = createStore(
+  rootReducer,
+  applyMiddleware(thunk)
+);
 
 export default store;

@@ -1,85 +1,109 @@
+// Dashboard.scss
 .dashboard-page {
+  margin: 20px 0;
+  
+  .page-header {
+    margin-bottom: 20px;
+    
+    h2 {
+      margin-bottom: 5px;
+    }
+  }
+  
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 70vh;
+  }
+  
   .dashboard-stats {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     
     .stat-card {
       height: 100%;
-      transition: all 0.3s;
       
-      &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        transform: translateY(-2px);
-      }
-    }
-    
-    .warning-card {
-      .ant-statistic-title {
-        color: #cf1322;
+      &.warning-card {
+        border-left: 2px solid #cf1322;
       }
     }
   }
   
-  .load-status-card {
-    .resource-card {
-      cursor: pointer;
-      transition: all 0.3s;
-      
-      &:hover {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      }
-      
-      &.overloaded {
-        border-color: #ff4d4f;
-        
-        .resource-utilization {
-          color: #ff4d4f;
-          font-weight: bold;
-        }
-      }
-      
-      .resource-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        
-        .resource-name {
-          font-weight: bold;
-          margin-bottom: 4px;
-        }
-      }
+  .load-status-card, .task-status-card, 
+  .heatmap-card, .optimization-history-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    
+    .ant-card-body {
+      flex: 1;
+    }
+  }
+  
+  .resource-card {
+    cursor: pointer;
+    transition: all 0.3s;
+    
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
-    .view-all-btn {
-      text-align: center;
-      margin-top: 16px;
+    &.overloaded {
+      border-left: 2px solid #f5222d;
+    }
+    
+    .resource-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .resource-name {
+        font-weight: 500;
+        margin-bottom: 5px;
+      }
+      
+      .resource-utilization {
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.65);
+      }
     }
   }
   
   .task-status-card {
     .status-section {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       
       .status-item {
         display: flex;
         align-items: center;
-        margin-bottom: 8px;
-        
-        .anticon {
-          margin-right: 8px;
-        }
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 4px;
         
         &.overdue {
-          color: #ff4d4f;
+          background-color: rgba(245, 34, 45, 0.1);
+          
           .anticon {
-            color: #ff4d4f;
+            color: #f5222d;
           }
         }
         
         &.upcoming {
-          color: #faad14;
+          background-color: rgba(250, 173, 20, 0.1);
+          
           .anticon {
             color: #faad14;
           }
+        }
+        
+        .anticon {
+          margin-right: 10px;
+          font-size: 16px;
+        }
+        
+        .status-text {
+          font-size: 14px;
         }
       }
     }
@@ -88,17 +112,22 @@
       .deadline-item {
         display: flex;
         justify-content: space-between;
-        padding: 8px 0;
+        align-items: center;
+        padding: 10px 0;
         border-bottom: 1px solid #f0f0f0;
         cursor: pointer;
         
+        &:last-child {
+          border-bottom: none;
+        }
+        
         &:hover {
-          background-color: #f9f9f9;
+          background-color: rgba(0, 0, 0, 0.02);
         }
         
         .deadline-info {
           .task-name {
-            font-weight: bold;
+            font-weight: 500;
           }
           
           .resource-name {
@@ -108,47 +137,62 @@
         }
         
         .deadline-date {
-          color: #1890ff;
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.65);
+          font-weight: 500;
         }
       }
     }
   }
   
-  .heatmap-card {
-    .view-details-btn {
-      text-align: center;
-      margin-top: 16px;
-    }
-  }
-  
-  .optimization-history-card {
-    .history-list {
-      .history-item {
-        display: flex;
-        margin-bottom: 12px;
+  .history-list {
+    .history-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .history-icon {
+        margin-right: 10px;
+        color: #52c41a;
+        font-size: 16px;
+        padding-top: 2px;
+      }
+      
+      .history-content {
+        flex: 1;
         
-        .history-icon {
-          margin-right: 12px;
-          color: #52c41a;
+        .history-desc {
+          font-weight: 500;
         }
         
-        .history-content {
-          flex: 1;
-          
-          .history-desc {
-            margin-bottom: 4px;
-          }
-          
-          .history-time {
-            font-size: 12px;
-            color: rgba(0, 0, 0, 0.45);
-          }
+        .history-time {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.45);
         }
       }
     }
+  }
+  
+  .view-all-btn, .view-details-btn {
+    text-align: center;
+    margin-top: 15px;
   }
   
   .bottom-row {
     margin-top: 16px;
+  }
+}
+
+@media (max-width: 992px) {
+  .dashboard-page {
+    .stat-card, .load-status-card, .task-status-card, 
+    .heatmap-card, .optimization-history-card {
+      margin-bottom: 16px;
+    }
   }
 }
