@@ -1,0 +1,10 @@
+.load-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  .ant-progress-text {
+    font-size: 14px;
+    font-weight: bold;
+  }
+}

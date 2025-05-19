@@ -1,0 +1,154 @@
+.dashboard-page {
+  .dashboard-stats {
+    margin-bottom: 24px;
+    
+    .stat-card {
+      height: 100%;
+      transition: all 0.3s;
+      
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+      }
+    }
+    
+    .warning-card {
+      .ant-statistic-title {
+        color: #cf1322;
+      }
+    }
+  }
+  
+  .load-status-card {
+    .resource-card {
+      cursor: pointer;
+      transition: all 0.3s;
+      
+      &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+      
+      &.overloaded {
+        border-color: #ff4d4f;
+        
+        .resource-utilization {
+          color: #ff4d4f;
+          font-weight: bold;
+        }
+      }
+      
+      .resource-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        .resource-name {
+          font-weight: bold;
+          margin-bottom: 4px;
+        }
+      }
+    }
+    
+    .view-all-btn {
+      text-align: center;
+      margin-top: 16px;
+    }
+  }
+  
+  .task-status-card {
+    .status-section {
+      margin-bottom: 16px;
+      
+      .status-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        
+        .anticon {
+          margin-right: 8px;
+        }
+        
+        &.overdue {
+          color: #ff4d4f;
+          .anticon {
+            color: #ff4d4f;
+          }
+        }
+        
+        &.upcoming {
+          color: #faad14;
+          .anticon {
+            color: #faad14;
+          }
+        }
+      }
+    }
+    
+    .deadline-list {
+      .deadline-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        
+        &:hover {
+          background-color: #f9f9f9;
+        }
+        
+        .deadline-info {
+          .task-name {
+            font-weight: bold;
+          }
+          
+          .resource-name {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.45);
+          }
+        }
+        
+        .deadline-date {
+          color: #1890ff;
+        }
+      }
+    }
+  }
+  
+  .heatmap-card {
+    .view-details-btn {
+      text-align: center;
+      margin-top: 16px;
+    }
+  }
+  
+  .optimization-history-card {
+    .history-list {
+      .history-item {
+        display: flex;
+        margin-bottom: 12px;
+        
+        .history-icon {
+          margin-right: 12px;
+          color: #52c41a;
+        }
+        
+        .history-content {
+          flex: 1;
+          
+          .history-desc {
+            margin-bottom: 4px;
+          }
+          
+          .history-time {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.45);
+          }
+        }
+      }
+    }
+  }
+  
+  .bottom-row {
+    margin-top: 16px;
+  }
+}

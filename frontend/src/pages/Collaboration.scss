@@ -1,0 +1,187 @@
+.collaboration-page {
+  .page-header {
+    margin-bottom: 24px;
+  }
+  
+  .collaboration-card {
+    margin-bottom: 24px;
+  }
+  
+  .tab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  // 알림 리스트 스타일
+  .notifications-list,
+  .messages-list {
+    .notification-item,
+    .message-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background-color 0.3s;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #f9f9f9;
+      }
+      
+      &.unread {
+        background-color: #e6f7ff;
+        
+        &:hover {
+          background-color: #bae7ff;
+        }
+      }
+      
+      .item-checkbox {
+        margin-right: 16px;
+        padding-top: 2px;
+      }
+      
+      .item-icon,
+      .item-avatar {
+        margin-right: 16px;
+        font-size: 20px;
+      }
+      
+      .item-content {
+        flex: 1;
+        min-width: 0;
+        
+        .item-title,
+        .item-sender {
+          font-weight: 500;
+          font-size: 16px;
+          margin-bottom: 4px;
+          display: flex;
+          align-items: center;
+          
+          .unread-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #1890ff;
+            margin-left: 8px;
+          }
+        }
+        
+        .item-message,
+        .item-snippet {
+          color: rgba(0, 0, 0, 0.65);
+          margin-bottom: 8px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .item-task {
+          margin-bottom: 4px;
+        }
+        
+        .item-time {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.45);
+        }
+      }
+    }
+  }
+  
+  // 팀 스타일
+  .teams-content {
+    .teams-list-card {
+      height: 100%;
+      
+      .team-list-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 8px;
+        
+        &:hover {
+          background-color: #f9f9f9;
+        }
+        
+        &.selected {
+          background-color: #e6f7ff;
+          border-right: 3px solid #1890ff;
+        }
+        
+        .team-list-icon {
+          margin-right: 12px;
+        }
+        
+        .team-list-content {
+          flex: 1;
+          
+          .team-list-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+          }
+          
+          .team-list-meta {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.45);
+          }
+        }
+      }
+    }
+    
+    .team-details-card {
+      height: 100%;
+      
+      .team-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        
+        .team-info {
+          h4 {
+            margin-bottom: 8px;
+          }
+        }
+      }
+      
+      .team-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 300px;
+      }
+    }
+  }
+  
+  // 설정 모달 스타일
+  .notification-settings {
+    .settings-section {
+      margin-bottom: 24px;
+      
+      h5 {
+        margin-bottom: 16px;
+      }
+      
+      .settings-option {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        
+        .option-label {
+          display: flex;
+          align-items: center;
+          
+          .anticon {
+            margin-right: 8px;
+          }
+        }
+      }
+    }
+  }
+}
