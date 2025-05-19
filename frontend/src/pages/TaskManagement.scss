@@ -1,0 +1,144 @@
+// TaskManagement.scss
+// 작업 관리 페이지 스타일
+
+.task-management-page {
+  margin: 20px 0;
+  
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    .header-left {
+      h2 {
+        margin-bottom: 5px;
+      }
+    }
+  }
+  
+  .filter-card {
+    margin-bottom: 20px;
+    
+    .filter-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      
+      @media (max-width: 1200px) {
+        flex-direction: column;
+        align-items: flex-start;
+        
+        .ant-space {
+          margin-bottom: 10px;
+        }
+      }
+    }
+  }
+  
+  .task-list-card {
+    margin-bottom: 20px;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 8px;
+    
+    .form-col {
+      flex: 1;
+    }
+  }
+  
+  .form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  
+  .gantt-view, .kanban-view, .dependency-view {
+    padding: 20px;
+    min-height: 500px;
+  }
+  
+  // 작업 상세 정보 스타일
+  .task-detail-content {
+    .task-detail-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .task-detail-info {
+      margin: 20px 0;
+      
+      .info-item {
+        display: flex;
+        margin-bottom: 12px;
+        
+        .info-label {
+          width: 120px;
+          color: rgba(0, 0, 0, 0.65);
+          
+          .anticon {
+            margin-right: 8px;
+          }
+        }
+        
+        .info-value {
+          flex: 1;
+          font-weight: 500;
+        }
+      }
+    }
+    
+    .task-progress {
+      margin: 20px 0;
+      
+      .progress-label {
+        margin-bottom: 5px;
+      }
+    }
+    
+    .dependencies-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      
+      .dependency-tag {
+        padding: 4px 8px;
+      }
+    }
+    
+    .history-entry {
+      margin-bottom: 16px;
+      
+      .history-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+    }
+    
+    .comments-section {
+      .comment-item {
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f0f0f0;
+        
+        .comment-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+        }
+        
+        .comment-content {
+          white-space: pre-line;
+        }
+      }
+    }
+  }
+}
