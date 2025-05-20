@@ -14,7 +14,12 @@
     "redux-thunk": "^2.4.2",
     "react-scripts": "5.0.1",
     "moment": "^2.29.4",
-    "sass": "^1.63.6"
+    "sass": "^1.63.6",
+    "recharts": "^2.7.2",
+    "axios": "^1.4.0",
+    "react-chartjs-2": "^5.2.0",
+    "chart.js": "^4.3.0",
+    "prop-types": "^15.8.1"
   },
   "scripts": {
     "start": "react-scripts start",
