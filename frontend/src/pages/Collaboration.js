@@ -20,7 +20,9 @@ import {
   Alert,
   Empty,
   Table,
-  Tooltip
+  Tooltip,
+  Row,
+  Col
 } from 'antd';
 import {
   MessageOutlined,
