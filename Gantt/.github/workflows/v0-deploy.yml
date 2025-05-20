@@ -1,0 +1,54 @@
+name: Deploy to v0
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd frontend && npm ci
+          cd ../backend && npm ci
+
+      - name: Run tests
+        run: |
+          cd frontend && npm test -- --watchAll=false
+          cd ../backend && npm test
+
+      - name: Install v0 CLI
+        run: npm install -g v0
+
+      - name: Configure environment files
+        run: |
+          cp frontend/.env.production.v0 frontend/.env.production
+          cp backend/.env.production.v0 backend/.env.production
+
+      - name: Login to v0
+        run: v0 login --token ${{ secrets.V0_TOKEN }}
+
+      - name: Deploy to v0
+        run: v0 deploy
+
+      - name: Notify deployment status
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_CHANNEL: deployments
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: v0 Deployment ${{ job.status }}
+          SLACK_MESSAGE: 'Deployment to v0 ${{ job.status }}'
+          SLACK_FOOTER: 'Powered by GitHub Actions'

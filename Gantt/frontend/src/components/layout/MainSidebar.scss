@@ -1,0 +1,12 @@
+.main-sidebar {
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  overflow: auto;
+  margin-top: 64px;
+
+  .sidebar-menu {
+    height: 100%;
+    border-right: 0;
+  }
+}

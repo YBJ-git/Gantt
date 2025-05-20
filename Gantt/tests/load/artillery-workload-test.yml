@@ -1,0 +1,83 @@
+config:
+  target: "http://localhost:3000/api"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 5
+      rampTo: 20
+      name: "Ramp up load"
+    - duration: 300
+      arrivalRate: 20
+      name: "Sustained load"
+    - duration: 60
+      arrivalRate: 50
+      name: "Peak load test"
+  processor: "./artillery-functions.js"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  # 테스트 결과 리포트 구성
+  ensure:
+    max: 2000    # 최대 응답 시간 2초
+    maxErrorRate: 1  # 최대 에러율 1%
+
+scenarios:
+  - name: "작업 부하 데이터 조회 시나리오"
+    flow:
+      - function: "setRandomProjectId"
+      - get:
+          url: "/workload/project/{{ projectId }}"
+          name: "Get project workload data"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.data[0].taskId"
+              as: "taskId"
+      - think: 2
+      - get:
+          url: "/workload/task/{{ taskId }}"
+          name: "Get task workload details"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - get:
+          url: "/workload/resource-summary/{{ projectId }}"
+          name: "Get resource workload summary"
+          expect:
+            - statusCode: 200
+      
+  - name: "부하 최적화 시나리오"
+    flow:
+      - function: "setRandomProjectId"
+      - function: "generateOptimizationRequest"
+      - post:
+          url: "/workload/optimize"
+          name: "Optimize project workload"
+          json:
+            projectId: "{{ projectId }}"
+            optimizationParams: "{{ optimizationParams }}"
+          expect:
+            - statusCode: 200
+            - contentType: "application/json"
+          capture:
+            - json: "$.optimizationId"
+              as: "optimizationId"
+      - think: 3
+      - get:
+          url: "/workload/optimization-result/{{ optimizationId }}"
+          name: "Get optimization results"
+          expect:
+            - statusCode: 200
+
+  - name: "리소스 부하 대시보드 시나리오"
+    flow:
+      - function: "setRandomProjectId"
+      - function: "setRandomDateRange"
+      - get:
+          url: "/workload/dashboard/{{ projectId }}?startDate={{ startDate }}&endDate={{ endDate }}"
+          name: "Get workload dashboard data"
+          expect:
+            - statusCode: 200

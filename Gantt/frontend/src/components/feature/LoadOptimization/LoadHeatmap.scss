@@ -1,0 +1,110 @@
+.load-heatmap {
+  margin: 0 auto;
+  padding: 16px;
+  
+  .heatmap-legend {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        margin-right: 8px;
+      }
+      
+      .load-low {
+        background-color: #91d5ff;
+      }
+      
+      .load-medium {
+        background-color: #ffc53d;
+      }
+      
+      .load-high {
+        background-color: #ff7a45;
+      }
+      
+      .load-critical {
+        background-color: #f5222d;
+      }
+    }
+  }
+  
+  .heatmap-grid {
+    display: flex;
+    flex-direction: column;
+    overflow-x: auto;
+    
+    .heatmap-header, .heatmap-row {
+      display: flex;
+      flex-direction: row;
+    }
+    
+    .heatmap-resource-column, .heatmap-resource-cell {
+      min-width: 150px;
+      flex-shrink: 0;
+      padding: 8px;
+      background-color: #fafafa;
+      font-weight: bold;
+      border: 1px solid #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .heatmap-date-column {
+      min-width: 60px;
+      padding: 8px;
+      text-align: center;
+      background-color: #f5f5f5;
+      border: 1px solid #f0f0f0;
+      font-size: 12px;
+      
+      &.weekend {
+        background-color: #e6f7ff;
+      }
+    }
+    
+    .heatmap-cell {
+      min-width: 60px;
+      height: 60px;
+      border: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      
+      &.load-low {
+        background-color: #91d5ff;
+      }
+      
+      &.load-medium {
+        background-color: #ffc53d;
+      }
+      
+      &.load-high {
+        background-color: #ff7a45;
+      }
+      
+      &.load-critical {
+        background-color: #f5222d;
+        color: white;
+      }
+      
+      &.no-data {
+        background-color: #f5f5f5;
+      }
+      
+      &.weekend {
+        border: 1px dashed #d9d9d9;
+      }
+    }
+  }
+}

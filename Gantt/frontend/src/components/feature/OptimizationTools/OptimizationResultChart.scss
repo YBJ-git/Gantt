@@ -1,0 +1,71 @@
+.optimization-result-chart {
+  .chart-content {
+    .resource-bar {
+      margin-bottom: 16px;
+      
+      .resource-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        
+        .change-indicator {
+          font-weight: 500;
+          font-size: 12px;
+        }
+      }
+      
+      .bars-container {
+        .bar-row {
+          display: flex;
+          align-items: center;
+          margin-bottom: 8px;
+          
+          .bar-label {
+            width: 60px;
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.65);
+          }
+          
+          .bar-wrapper {
+            flex: 1;
+            height: 20px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+          }
+          
+          .bar {
+            height: 100%;
+            text-align: right;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+            
+            .bar-value {
+              position: absolute;
+              right: 8px;
+              top: 0;
+              bottom: 0;
+              display: flex;
+              align-items: center;
+              color: white;
+              font-size: 12px;
+              font-weight: 500;
+              text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+            }
+          }
+          
+          .before-bar {
+            opacity: 0.7;
+          }
+          
+          .after-bar {
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
+}

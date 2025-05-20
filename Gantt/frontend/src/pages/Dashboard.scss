@@ -1,0 +1,262 @@
+// Dashboard.scss
+.dashboard-page {
+  margin: 20px 0;
+  
+  .page-header {
+    margin-bottom: 20px;
+    
+    h2 {
+      margin-bottom: 5px;
+    }
+  }
+  
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 70vh;
+  }
+  
+  .dashboard-stats {
+    margin-bottom: 20px;
+    
+    .stat-card {
+      height: 100%;
+      
+      &.warning-card {
+        border-left: 2px solid #cf1322;
+      }
+    }
+  }
+  
+  .load-status-card, .task-status-card, 
+  .heatmap-card, .optimization-history-card,
+  .gantt-chart-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    
+    .ant-card-body {
+      flex: 1;
+    }
+  }
+  
+  .gantt-chart-card {
+    margin-bottom: 16px;
+  }
+  
+  .resource-card {
+    cursor: pointer;
+    transition: all 0.3s;
+    
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    &.overloaded {
+      border-left: 2px solid #f5222d;
+    }
+    
+    .resource-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .resource-name {
+        font-weight: 500;
+        margin-bottom: 5px;
+      }
+      
+      .resource-utilization {
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.65);
+      }
+    }
+  }
+  
+  .task-status-card {
+    .status-section {
+      margin-bottom: 20px;
+      
+      .status-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 4px;
+        
+        &.overdue {
+          background-color: rgba(245, 34, 45, 0.1);
+          
+          .anticon {
+            color: #f5222d;
+          }
+        }
+        
+        &.upcoming {
+          background-color: rgba(250, 173, 20, 0.1);
+          
+          .anticon {
+            color: #faad14;
+          }
+        }
+        
+        .anticon {
+          margin-right: 10px;
+          font-size: 16px;
+        }
+        
+        .status-text {
+          font-size: 14px;
+        }
+      }
+    }
+    
+    .deadline-list {
+      .deadline-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .deadline-info {
+          .task-name {
+            font-weight: 500;
+          }
+          
+          .resource-name {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.45);
+          }
+        }
+        
+        .deadline-date {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.65);
+          font-weight: 500;
+        }
+      }
+    }
+  }
+  
+  .history-list {
+    .history-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .history-icon {
+        margin-right: 10px;
+        color: #52c41a;
+        font-size: 16px;
+        padding-top: 2px;
+      }
+      
+      .history-content {
+        flex: 1;
+        
+        .history-desc {
+          font-weight: 500;
+        }
+        
+        .history-time {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.45);
+        }
+      }
+    }
+  }
+  
+  .view-all-btn, .view-details-btn {
+    text-align: center;
+    margin-top: 15px;
+  }
+  
+  .bottom-row {
+    margin-top: 16px;
+  }
+  
+  /* 리소스 부하 개요 카드 스타일 */
+  .resource-load-summary {
+    margin-bottom: 16px;
+    
+    .resource-summary-card {
+      .resource-load-card {
+        text-align: left;
+        height: 100%;
+        
+        .resource-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+          
+          h3 {
+            margin: 0;
+            font-size: 16px;
+          }
+          
+          .resource-badge {
+            background-color: #f5f5f5;
+            color: #666;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+          }
+        }
+        
+        .resource-load, .assigned-tasks {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          
+          .load-value {
+            font-weight: bold;
+          }
+        }
+        
+        .view-details {
+          margin-top: 8px;
+          text-align: right;
+        }
+        
+        &.warning {
+          .load-value {
+            color: #faad14;
+          }
+        }
+        
+        &.critical {
+          .load-value {
+            color: #f5222d;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 992px) {
+  .dashboard-page {
+    .stat-card, .load-status-card, .task-status-card, 
+    .heatmap-card, .optimization-history-card {
+      margin-bottom: 16px;
+    }
+  }
+}

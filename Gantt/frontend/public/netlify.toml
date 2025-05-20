@@ -1,0 +1,52 @@
+# 빌드 설정
+[build]
+  # 프론트엔드 빌드 명령어
+  command = "npm run build"
+  # 빌드 결과물이 생성되는 디렉토리
+  publish = "build"
+  # 함수(서버리스) 디렉토리 지정
+  functions = "netlify/functions"
+
+# 환경 변수 설정
+[build.environment]
+  NODE_VERSION = "16"
+  NPM_VERSION = "8"
+  CI = "false"
+
+# 리다이렉트 설정
+[[redirects]]
+  # SPA 라우팅을 위한 설정
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# 헤더 설정
+[[headers]]
+  # 모든 페이지에 적용할 헤더
+  for = "/*"
+    [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+
+# 프록시 설정 (백엔드 API 연결)
+[[redirects]]
+  from = "/api/*"
+  to = "https://workload-optimization-api.onrender.com/api/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+# 빌드 플러그인 설정
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+
+# 배포 컨텍스트별 설정
+[context.production]
+  environment = { NODE_ENV = "production", REACT_APP_API_URL = "https://workload-optimization-api.onrender.com/api", REACT_APP_API_BASE_URL = "https://workload-optimization-api.onrender.com/api" }
+
+[context.deploy-preview]
+  environment = { NODE_ENV = "staging", REACT_APP_API_URL = "https://workload-optimization-api-staging.onrender.com/api", REACT_APP_API_BASE_URL = "https://workload-optimization-api-staging.onrender.com/api" }
+
+[context.branch-deploy]
+  environment = { NODE_ENV = "development", REACT_APP_API_URL = "https://workload-optimization-api-dev.onrender.com/api", REACT_APP_API_BASE_URL = "https://workload-optimization-api-dev.onrender.com/api" }
