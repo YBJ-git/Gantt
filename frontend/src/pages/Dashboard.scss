@@ -30,7 +30,8 @@
   }
   
   .load-status-card, .task-status-card, 
-  .heatmap-card, .optimization-history-card {
+  .heatmap-card, .optimization-history-card,
+  .gantt-chart-card {
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -38,6 +39,10 @@
     .ant-card-body {
       flex: 1;
     }
+  }
+  
+  .gantt-chart-card {
+    margin-bottom: 16px;
   }
   
   .resource-card {
@@ -185,6 +190,65 @@
   
   .bottom-row {
     margin-top: 16px;
+  }
+  
+  /* 리소스 부하 개요 카드 스타일 */
+  .resource-load-summary {
+    margin-bottom: 16px;
+    
+    .resource-summary-card {
+      .resource-load-card {
+        text-align: left;
+        height: 100%;
+        
+        .resource-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+          
+          h3 {
+            margin: 0;
+            font-size: 16px;
+          }
+          
+          .resource-badge {
+            background-color: #f5f5f5;
+            color: #666;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+          }
+        }
+        
+        .resource-load, .assigned-tasks {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          
+          .load-value {
+            font-weight: bold;
+          }
+        }
+        
+        .view-details {
+          margin-top: 8px;
+          text-align: right;
+        }
+        
+        &.warning {
+          .load-value {
+            color: #faad14;
+          }
+        }
+        
+        &.critical {
+          .load-value {
+            color: #f5222d;
+          }
+        }
+      }
+    }
   }
 }
 

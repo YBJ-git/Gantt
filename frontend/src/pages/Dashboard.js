@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Spin, Statistic, Typography, Button, Divider } from 'antd';
+import { Row, Col, Card, Spin, Statistic, Typography, Button, Divider, Radio, Badge } from 'antd';
 import { 
   WarningOutlined, 
   CheckCircleOutlined, 
   ClockCircleOutlined,
   TeamOutlined,
   BarChartOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  ScheduleOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -14,6 +15,7 @@ import moment from 'moment';
 import { fetchDashboardData } from '../redux/actions/dashboardActions';
 import LoadGauge from '../components/feature/LoadOptimization/LoadGauge';
 import LoadHeatmap from '../components/feature/LoadOptimization/LoadHeatmap';
+import ProjectGanttChart from '../components/feature/TaskManagement/ProjectGanttChart';
 import './Dashboard.scss';
 
 const { Title, Text } = Typography;
@@ -22,6 +24,7 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [ganttViewMode, setGanttViewMode] = useState('week');
   const dashboardData = useSelector(state => state.dashboard?.data || {});
   
   useEffect(() => {
@@ -58,6 +61,90 @@ const Dashboard = () => {
       { id: 105, name: '테스트 자동화', resourceName: 'QA 엔지니어 A', deadline: '2025-05-30' },
       { id: 108, name: '통합 테스트', resourceName: 'QA 엔지니어 A', deadline: '2025-06-05' },
       { id: 107, name: 'API 개발', resourceName: '개발자 C', deadline: '2025-05-28' }
+    ]
+  };
+
+  // 간트 차트를 위한 더미 데이터
+  const ganttChartData = {
+    resources: [
+      { id: 1, name: '김철수', title: '개발팀', load: 140, tasks: 2 },
+      { id: 2, name: '이영희', title: '디자인팀', load: 140, tasks: 2 },
+      { id: 3, name: '박지민', title: '개발팀', load: 170, tasks: 2 },
+      { id: 4, name: '최용주', title: '개발팀', load: 285, tasks: 4 }
+    ],
+    tasks: [
+      { 
+        id: 1, 
+        text: '요구사항 분석', 
+        resourceId: 1, 
+        start_date: '2025-07-31', 
+        end_date: '2025-08-07', 
+        progress: 100, 
+        dependencies: []
+      },
+      { 
+        id: 2, 
+        text: 'UI 디자인', 
+        resourceId: 2, 
+        start_date: '2025-08-07', 
+        end_date: '2025-08-14', 
+        progress: 70, 
+        dependencies: [1]
+      },
+      { 
+        id: 3, 
+        text: '프론트엔드 개발', 
+        resourceId: 4, 
+        start_date: '2025-08-14', 
+        end_date: '2025-08-28', 
+        progress: 40, 
+        dependencies: [2]
+      },
+      { 
+        id: 4, 
+        text: '백엔드 개발', 
+        resourceId: 3, 
+        start_date: '2025-08-14', 
+        end_date: '2025-09-04', 
+        progress: 30, 
+        dependencies: [1]
+      },
+      { 
+        id: 5, 
+        text: '통합 테스트', 
+        resourceId: 3, 
+        start_date: '2025-09-04', 
+        end_date: '2025-09-11', 
+        progress: 0, 
+        dependencies: [3, 4]
+      },
+      { 
+        id: 6, 
+        text: '사용자 테스트', 
+        resourceId: 2, 
+        start_date: '2025-09-11', 
+        end_date: '2025-09-18', 
+        progress: 0, 
+        dependencies: [5]
+      },
+      { 
+        id: 7, 
+        text: '버그 수정', 
+        resourceId: 4, 
+        start_date: '2025-09-18', 
+        end_date: '2025-09-25', 
+        progress: 0, 
+        dependencies: [6]
+      },
+      { 
+        id: 8, 
+        text: '배포', 
+        resourceId: 4, 
+        start_date: '2025-09-25', 
+        end_date: '2025-10-02', 
+        progress: 0, 
+        dependencies: [7]
+      }
     ]
   };
 
@@ -119,6 +206,76 @@ const Dashboard = () => {
               valueStyle={{ color: '#cf1322' }}
               prefix={<WarningOutlined />}
             />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 리소스 부하 개요 */}
+      <Row gutter={[16, 16]} className="resource-load-summary">
+        <Col xs={24}>
+          <Card title="리소스 부하 개요" className="resource-summary-card">
+            <Row gutter={16}>
+              {ganttChartData.resources.map(resource => (
+                <Col xs={24} sm={12} md={6} key={resource.id}>
+                  <Card 
+                    className={`resource-load-card ${resource.load > 200 ? 'critical' : resource.load > 100 ? 'warning' : ''}`}
+                    bordered={false}
+                  >
+                    <div className="resource-header">
+                      <h3>{resource.name}</h3>
+                      <Badge count={<div className="resource-badge">{resource.title}</div>} />
+                    </div>
+                    <div className="resource-load">
+                      <span>작업 부하</span>
+                      <span className="load-value">{resource.load}%</span>
+                    </div>
+                    <div className="assigned-tasks">
+                      <span>할당된 작업</span>
+                      <span>{resource.tasks}개</span>
+                    </div>
+                    <div className="view-details">
+                      <Button type="link" size="small">상세 보기</Button>
+                    </div>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 간트 차트 */}
+      <Row gutter={[16, 16]}>
+        <Col xs={24}>
+          <Card 
+            title={
+              <div className="gantt-header">
+                <span>간트 차트</span>
+                <Radio.Group 
+                  value={ganttViewMode} 
+                  onChange={e => setGanttViewMode(e.target.value)}
+                  optionType="button"
+                  buttonStyle="solid"
+                  size="small"
+                >
+                  <Radio.Button value="day">일</Radio.Button>
+                  <Radio.Button value="week">주</Radio.Button>
+                  <Radio.Button value="month">월</Radio.Button>
+                </Radio.Group>
+              </div>
+            } 
+            className="gantt-chart-card"
+          >
+            <ProjectGanttChart 
+              tasks={ganttChartData.tasks} 
+              resources={ganttChartData.resources}
+              viewMode={ganttViewMode}
+            />
+            <div className="view-details-btn">
+              <Button type="primary" onClick={() => navigate('/tasks')}>
+                작업 관리로 이동
+              </Button>
+            </div>
           </Card>
         </Col>
       </Row>
