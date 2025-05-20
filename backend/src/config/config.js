@@ -12,12 +12,12 @@ module.exports = {
   },
   
   database: {
-    // MCP 서버의 MySQL 연결 정보 사용
-    host: process.env.MYSQL_HOST || 'localhost',
-    port: parseInt(process.env.MYSQL_PORT) || 3306,
-    user: process.env.MYSQL_USER || 'root',
-    password: process.env.MYSQL_PASSWORD || '',  // 비밀번호는 환경변수로만 제공해야 함
-    database: process.env.MYSQL_DATABASE || 'MylocalSQLServer',
+    // DB 연결 정보 사용
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT) || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',  // 비밀번호는 환경변수로만 제공해야 함
+    database: process.env.DB_NAME || 'MylocalSQLServer',
     connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
     waitForConnections: true,
     queueLimit: 0,
