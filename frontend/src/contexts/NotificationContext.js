@@ -3,6 +3,10 @@ import { message } from 'antd';
 
 const NotificationContext = createContext();
 
+// useNotification에서 useNotifications로 이름 변경
+export const useNotifications = () => useContext(NotificationContext);
+
+// 기존 함수도 유지 (하위 호환성을 위해)
 export const useNotification = () => useContext(NotificationContext);
 
 const NotificationProvider = ({ children }) => {

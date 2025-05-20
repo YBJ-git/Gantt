@@ -40,7 +40,8 @@ import {
   PushpinOutlined,
   BulbOutlined,
   WarningOutlined,
-  SyncOutlined
+  SyncOutlined,
+  DownOutlined
 } from '@ant-design/icons';
 import moment from 'moment';
 import { useSelector, useDispatch } from 'react-redux';
