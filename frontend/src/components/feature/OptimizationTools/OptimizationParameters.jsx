@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Card, Typography, Slider, DatePicker, Radio, Switch, Divider, Tooltip, Space } from 'antd';
 import { 
-  BalanceOutlined, 
+  BarChartOutlined, // BalanceOutlined 대신 BarChartOutlined로 변경
   ClockCircleOutlined, 
   AimOutlined,
   DollarCircleOutlined,
@@ -22,7 +22,8 @@ const OptimizationParameters = ({ parameters, onChange }) => {
           <Card title="균형화 가중치" className="parameter-card">
             <div className="parameter-item">
               <div className="parameter-label">
-                <BalanceOutlined /> <span>부하 균형</span>
+                <BarChartOutlined /> {/* BalanceOutlined -> BarChartOutlined */}
+                <span>부하 균형</span>
                 <Tooltip title="리소스 간의 작업 부하 균형을 맞추는 중요도">
                   <InfoCircleOutlined className="info-icon" />
                 </Tooltip>
