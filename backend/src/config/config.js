@@ -12,19 +12,21 @@ module.exports = {
   },
   
   database: {
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 3306,
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'password',
-    database: process.env.DB_NAME || 'gantt_chart_db',
-    connectionLimit: process.env.DB_CONNECTION_LIMIT || 10,
+    // MCP 서버의 MySQL 연결 정보 사용
+    host: process.env.MYSQL_HOST || 'localhost',
+    port: parseInt(process.env.MYSQL_PORT) || 3306,
+    user: process.env.MYSQL_USER || 'root',
+    password: process.env.MYSQL_PASSWORD || '',  // 비밀번호는 환경변수로만 제공해야 함
+    database: process.env.MYSQL_DATABASE || 'MylocalSQLServer',
+    connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
     waitForConnections: true,
     queueLimit: 0,
     charset: 'utf8mb4'
   },
   
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-secret-key',
+    // 중요: 실제 환경에서는 반드시 환경변수를 통해 JWT_SECRET을 제공해야 합니다
+    secret: process.env.JWT_SECRET || '',
     expiresIn: process.env.JWT_EXPIRES_IN || '1d'
   },
   

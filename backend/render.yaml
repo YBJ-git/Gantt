@@ -39,7 +39,7 @@ services:
           name: workload-cache
           property: connectionString
       - key: JWT_SECRET
-        value: secure_jwt_secret_for_workload_system
+        generateValue: true
       - key: JWT_EXPIRES_IN
         value: 24h
       - key: LOG_LEVEL

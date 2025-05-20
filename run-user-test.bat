@@ -5,7 +5,8 @@ rem 필요한 환경 변수 설정
 set NODE_ENV=test
 set DB_SERVER=localhost
 set DB_USER=sa
-set DB_PASSWORD=YourStrong!Passw0rd
+rem DB_PASSWORD는 .env 파일이나 환경에서 설정해야 합니다
+rem set DB_PASSWORD=비밀번호를_여기에_입력하지_마세요
 set PORT=3001
 
 echo 백엔드 서버를 시작합니다...

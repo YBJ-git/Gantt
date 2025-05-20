@@ -5,7 +5,8 @@
 export NODE_ENV=test
 export DB_SERVER=localhost
 export DB_USER=sa
-export DB_PASSWORD=YourStrong!Passw0rd
+# DB_PASSWORD는 .env 파일이나 환경에서 설정해야 합니다
+# export DB_PASSWORD=비밀번호를_여기에_입력하지_마세요
 export PORT=3001
 
 # 백엔드 서버 시작

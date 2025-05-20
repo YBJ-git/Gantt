@@ -10,7 +10,7 @@ require('dotenv').config();
 
 const config = {
   user: process.env.DB_USER || 'sa',
-  password: process.env.DB_PASSWORD || 'YourStrong!Passw0rd',
+  password: process.env.DB_PASSWORD || '',
   server: process.env.DB_SERVER || 'localhost',
   database: 'master',
   options: {
