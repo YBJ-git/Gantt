@@ -9,10 +9,12 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const config = require('./src/config/config');
 const logger = require('./src/utils/logger');
-const errorHandler = require('./src/utils/errorHandler');
 
 // 라우터 가져오기
 const apiRouter = require('./src/routes');
+
+// 오류 처리 미들웨어 가져오기
+const { globalErrorHandler, notFoundHandler } = require('./src/utils/errorHandler');
 
 // Express 앱 생성
 const app = express();
@@ -51,12 +53,10 @@ app.get('/api/health', (req, res) => {
 app.use(config.app.apiPrefix, apiRouter);
 
 // 404 처리
-app.use((req, res, next) => {
-  res.status(404).json({ error: '요청한 리소스를 찾을 수 없습니다.' });
-});
+app.use(notFoundHandler);
 
 // 오류 처리 미들웨어
-app.use(errorHandler);
+app.use(globalErrorHandler);
 
 // 서버 시작
 const PORT = config.app.port;
