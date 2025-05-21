@@ -30,33 +30,39 @@ async function migrate() {
 async function createTables() {
   logger.info('테이블 생성 중...');
 
+  // 사용자 테이블 - 상태를 위한 enum 도메인 생성
+  await db.execute(`CREATE TYPE IF NOT EXISTS user_role AS ENUM ('admin', 'manager', 'user')`);
+
   // 사용자 테이블
   await db.execute(`
     CREATE TABLE IF NOT EXISTS users (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       username VARCHAR(50) NOT NULL UNIQUE,
       email VARCHAR(100) NOT NULL UNIQUE,
       password VARCHAR(100) NOT NULL,
       first_name VARCHAR(50),
       last_name VARCHAR(50),
-      role ENUM('admin', 'manager', 'user') NOT NULL DEFAULT 'user',
+      role user_role NOT NULL DEFAULT 'user',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // 프로젝트 상태 enum 생성
+  await db.execute(`CREATE TYPE IF NOT EXISTS project_status AS ENUM ('planning', 'active', 'completed', 'on_hold')`);
 
   // 프로젝트 테이블
   await db.execute(`
     CREATE TABLE IF NOT EXISTS projects (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       description TEXT,
       start_date DATE NOT NULL,
       end_date DATE NOT NULL,
-      status ENUM('planning', 'active', 'completed', 'on_hold') NOT NULL DEFAULT 'planning',
+      status project_status NOT NULL DEFAULT 'planning',
       owner_id INT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (owner_id) REFERENCES users(id)
     )
   `);
@@ -64,93 +70,108 @@ async function createTables() {
   // 팀 테이블
   await db.execute(`
     CREATE TABLE IF NOT EXISTS teams (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       description TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // 리소스 타입 enum 생성
+  await db.execute(`CREATE TYPE IF NOT EXISTS resource_type AS ENUM ('human', 'equipment', 'facility')`);
 
   // 리소스 테이블
   await db.execute(`
     CREATE TABLE IF NOT EXISTS resources (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       email VARCHAR(100),
-      resource_type ENUM('human', 'equipment', 'facility') NOT NULL DEFAULT 'human',
+      resource_type resource_type NOT NULL DEFAULT 'human',
       capacity DECIMAL(5,2) DEFAULT 1.00,
       team_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (team_id) REFERENCES teams(id)
     )
   `);
 
+  // 작업 상태 enum 생성
+  await db.execute(`CREATE TYPE IF NOT EXISTS task_status AS ENUM ('not_started', 'in_progress', 'completed', 'delayed')`);
+  
+  // 작업 우선순위 enum 생성
+  await db.execute(`CREATE TYPE IF NOT EXISTS task_priority AS ENUM ('low', 'medium', 'high', 'urgent')`);
+
   // 작업 테이블
   await db.execute(`
     CREATE TABLE IF NOT EXISTS tasks (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       description TEXT,
       start_date DATE NOT NULL,
       end_date DATE NOT NULL,
       duration INT NOT NULL, 
       progress DECIMAL(5,2) DEFAULT 0.00,
-      status ENUM('not_started', 'in_progress', 'completed', 'delayed') NOT NULL DEFAULT 'not_started',
-      priority ENUM('low', 'medium', 'high', 'urgent') NOT NULL DEFAULT 'medium',
+      status task_status NOT NULL DEFAULT 'not_started',
+      priority task_priority NOT NULL DEFAULT 'medium',
       project_id INT NOT NULL,
       parent_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (project_id) REFERENCES projects(id),
       FOREIGN KEY (parent_id) REFERENCES tasks(id)
     )
   `);
 
+  // 작업 의존성 타입 enum 생성
+  await db.execute(`CREATE TYPE IF NOT EXISTS dependency_type AS ENUM ('finish_to_start', 'start_to_start', 'finish_to_finish', 'start_to_finish')`);
+
   // 작업 의존성 테이블
   await db.execute(`
     CREATE TABLE IF NOT EXISTS task_dependencies (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       predecessor_id INT NOT NULL,
       successor_id INT NOT NULL,
-      dependency_type ENUM('finish_to_start', 'start_to_start', 'finish_to_finish', 'start_to_finish') NOT NULL DEFAULT 'finish_to_start',
+      dependency_type dependency_type NOT NULL DEFAULT 'finish_to_start',
       lag INT DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (predecessor_id) REFERENCES tasks(id),
       FOREIGN KEY (successor_id) REFERENCES tasks(id),
-      UNIQUE KEY (predecessor_id, successor_id)
+      UNIQUE (predecessor_id, successor_id)
     )
   `);
 
   // 리소스 할당 테이블
   await db.execute(`
     CREATE TABLE IF NOT EXISTS resource_assignments (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       task_id INT NOT NULL,
       resource_id INT NOT NULL,
       allocation_percentage DECIMAL(5,2) DEFAULT 100.00,
       start_date DATE NOT NULL,
       end_date DATE NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (task_id) REFERENCES tasks(id),
       FOREIGN KEY (resource_id) REFERENCES resources(id),
-      UNIQUE KEY (task_id, resource_id)
+      UNIQUE (task_id, resource_id)
     )
   `);
+
+  // 최적화 상태 enum 생성
+  await db.execute(`CREATE TYPE IF NOT EXISTS optimization_status AS ENUM ('pending', 'completed', 'failed')`);
 
   // 최적화 기록 테이블
   await db.execute(`
     CREATE TABLE IF NOT EXISTS optimization_logs (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       project_id INT NOT NULL,
       user_id INT NOT NULL,
       optimization_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      parameters JSON,
-      results JSON,
-      status ENUM('pending', 'completed', 'failed') NOT NULL DEFAULT 'pending',
+      parameters JSONB,
+      results JSONB,
+      status optimization_status NOT NULL DEFAULT 'pending',
       FOREIGN KEY (project_id) REFERENCES projects(id),
       FOREIGN KEY (user_id) REFERENCES users(id)
     )
@@ -159,19 +180,42 @@ async function createTables() {
   // 작업 부하 테이블
   await db.execute(`
     CREATE TABLE IF NOT EXISTS workload_data (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       resource_id INT NOT NULL,
       date DATE NOT NULL,
       workload_hours DECIMAL(5,2) NOT NULL DEFAULT 0.00,
       capacity_hours DECIMAL(5,2) NOT NULL DEFAULT 8.00,
       project_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (resource_id) REFERENCES resources(id),
       FOREIGN KEY (project_id) REFERENCES projects(id),
-      UNIQUE KEY (resource_id, date)
+      UNIQUE (resource_id, date)
     )
   `);
+
+  // updated_at 업데이트를 위한 트리거 생성
+  const tables = ['users', 'projects', 'teams', 'resources', 'tasks', 'task_dependencies', 'resource_assignments', 'workload_data'];
+  
+  for (const table of tables) {
+    await db.execute(`
+      CREATE OR REPLACE FUNCTION update_timestamp_column()
+      RETURNS TRIGGER AS $
+      BEGIN
+        NEW.updated_at = CURRENT_TIMESTAMP;
+        RETURN NEW;
+      END;
+      $ language 'plpgsql';
+    `);
+
+    await db.execute(`
+      DROP TRIGGER IF EXISTS ${table}_update_timestamp ON ${table};
+      CREATE TRIGGER ${table}_update_timestamp
+      BEFORE UPDATE ON ${table}
+      FOR EACH ROW
+      EXECUTE FUNCTION update_timestamp_column();
+    `);
+  }
 
   logger.info('테이블 생성 완료.');
 }
@@ -183,35 +227,37 @@ async function insertInitialData() {
   logger.info('초기 데이터 삽입 중...');
 
   // 사용자 데이터 삽입
-  const [userExists] = await db.execute('SELECT COUNT(*) as count FROM users WHERE username = ?', ['admin']);
+  const [userExists] = await db.execute('SELECT COUNT(*) as count FROM users WHERE username = $1', ['admin']);
   
-  if (userExists[0].count === 0) {
+  if (userExists[0].count === '0') {
     await db.execute(`
       INSERT INTO users (username, email, password, first_name, last_name, role)
-      VALUES (?, ?, ?, ?, ?, ?)
+      VALUES ($1, $2, $3, $4, $5, $6)
     `, ['admin', 'admin@example.com', '$2b$10$xqSRxmHZxJT6Aq5eUxj4MeMVfuW9z5nzq64CcK9bN57Hx07V3bhFS', '관리자', '사용자', 'admin']);
     
     logger.info('관리자 사용자 생성됨.');
   }
 
   // 팀 데이터 삽입
-  const [teamExists] = await db.execute('SELECT COUNT(*) as count FROM teams WHERE name = ?', ['개발팀']);
+  const [teamExists] = await db.execute('SELECT COUNT(*) as count FROM teams WHERE name = $1', ['개발팀']);
   
-  if (teamExists[0].count === 0) {
-    const [result] = await db.execute(`
+  if (teamExists[0].count === '0') {
+    // 팀 생성 및 ID 받기
+    const [teamResult] = await db.execute(`
       INSERT INTO teams (name, description)
-      VALUES (?, ?)
+      VALUES ($1, $2)
+      RETURNING id
     `, ['개발팀', '소프트웨어 개발 및 유지보수 팀']);
     
-    const teamId = result.insertId;
+    const teamId = teamResult[0].id;
     
-    // 리소스 데이터 삽입
+    // 리소스 데이터 삽입 - PostgreSQL에서는 다중 로우 삽입 문법이 다름
     await db.execute(`
       INSERT INTO resources (name, email, resource_type, capacity, team_id)
       VALUES
-        (?, ?, ?, ?, ?),
-        (?, ?, ?, ?, ?),
-        (?, ?, ?, ?, ?)
+        ($1, $2, $3, $4, $5),
+        ($6, $7, $8, $9, $10),
+        ($11, $12, $13, $14, $15)
     `, [
       '홍길동', 'hong@example.com', 'human', 1.0, teamId,
       '김철수', 'kim@example.com', 'human', 1.0, teamId,

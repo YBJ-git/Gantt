@@ -14,14 +14,12 @@ module.exports = {
   database: {
     // DB 연결 정보 사용
     host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'root',
+    port: parseInt(process.env.DB_PORT) || 5432,
+    user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || '',  // 비밀번호는 환경변수로만 제공해야 함
-    database: process.env.DB_NAME || 'MylocalSQLServer',
+    database: process.env.DB_NAME || 'postgres',
     connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
-    waitForConnections: true,
-    queueLimit: 0,
-    charset: 'utf8mb4'
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined
   },
   
   jwt: {

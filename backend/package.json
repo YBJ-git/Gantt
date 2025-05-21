@@ -12,6 +12,7 @@
     "test:performance": "jest --testPathPattern=src/tests/performance",
     "test:coverage": "jest --coverage",
     "db:migrate": "node src/database/migrate.js",
+    "test:db": "node src/utils/test-postgresql-connection.js",
     "lint": "eslint src/**/*.js"
   },
   "dependencies": {
@@ -19,6 +20,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "mysql2": "^3.6.0",
+    "pg": "^8.11.3",
+    "pg-pool": "^3.6.1",
     "morgan": "^1.10.0",
     "joi": "^17.9.2",
     "winston": "^3.10.0",

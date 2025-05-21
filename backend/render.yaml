@@ -14,23 +14,25 @@ services:
         value: 3000
       - key: DB_HOST
         fromService:
-          name: workload-mysql
-          type: pserv
+          name: workload-postgres
+          type: postgres
           property: host
       - key: DB_PORT
-        value: 3306
+        value: 5432
       - key: DB_USER
         fromService:
-          name: workload-mysql
-          type: pserv
+          name: workload-postgres
+          type: postgres
           property: user
       - key: DB_PASSWORD
         fromService:
-          name: workload-mysql
-          type: pserv
+          name: workload-postgres
+          type: postgres
           property: password
       - key: DB_NAME
-        value: workload_db
+        value: my_project_db
+      - key: DB_SSL
+        value: true
       - key: DB_CONNECTION_LIMIT
         value: 10
       - key: REDIS_URL
@@ -68,21 +70,10 @@ services:
     ipAllowList: []
     plan: starter
 
-  # MySQL 데이터베이스 서비스
-  - type: pserv
-    name: workload-mysql
+  # PostgreSQL 데이터베이스 서비스
+  - type: postgres
+    name: workload-postgres
     plan: starter
-    env: mysql
-    disk:
-      name: mysql-data
-      mountPath: /var/lib/mysql
-      sizeGB: 10
-    envVars:
-      - key: MYSQL_DATABASE
-        value: workload_db
-      - key: MYSQL_USER
-        value: workload_user
-      - key: MYSQL_PASSWORD
-        generateValue: true
-      - key: MYSQL_ROOT_PASSWORD
-        generateValue: true
+    ipAllowList: []
+    databaseName: my_project_db
+    user: postgres_user
