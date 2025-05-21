@@ -8,7 +8,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const config = require('./src/config/config');
-const logger = require('./src/utils/logger');
+const { logger } = require('./src/utils/logger');
 
 // 라우터 가져오기
 const apiRouter = require('./src/routes');

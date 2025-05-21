@@ -3,6 +3,7 @@
   base = "frontend"
   command = "npm install && npm run build"
   publish = "build"
+  ignore_submodules = true
 
 # 환경 변수 설정
 [build.environment]
