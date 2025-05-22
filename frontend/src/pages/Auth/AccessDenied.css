@@ -1,0 +1,161 @@
+/* 접근 거부 페이지 스타일 */
+.access-denied-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: var(--background, #f8f9fa);
+}
+
+.access-denied-content {
+  max-width: 600px;
+  text-align: center;
+  padding: 3rem 2rem;
+  background-color: var(--card-bg, white);
+  border-radius: var(--border-radius-lg, 0.5rem);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.error-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 2rem;
+  background-color: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border-radius: 50%;
+  font-size: 3rem;
+}
+
+.access-denied-content h1 {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+}
+
+.error-message {
+  font-size: 1.1rem;
+  color: var(--text-muted, #6c757d);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn {
+  display: inline-block;
+  font-weight: 500;
+  text-align: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: var(--border-radius-sm, 0.25rem);
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--primary-color, #3498db);
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark, #2980b9);
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--primary-color, #3498db);
+  border: 1px solid var(--primary-color, #3498db);
+}
+
+.btn-outline:hover {
+  background-color: rgba(52, 152, 219, 0.05);
+  transform: translateY(-2px);
+}
+
+.help-text {
+  font-size: 0.9rem;
+  color: var(--text-muted, #6c757d);
+  margin-top: 1rem;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 576px) {
+  .access-denied-content {
+    padding: 2rem 1.5rem;
+  }
+  
+  .error-icon {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .access-denied-content h1 {
+    font-size: 1.75rem;
+  }
+  
+  .error-message {
+    font-size: 1rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+}
+
+/* 다크 모드 */
+@media (prefers-color-scheme: dark) {
+  .access-denied-container {
+    background-color: var(--dark-bg, #1a202c);
+  }
+  
+  .access-denied-content {
+    background-color: var(--dark-card-bg, #2d3748);
+  }
+  
+  .access-denied-content h1 {
+    color: var(--dark-text, #e2e8f0);
+  }
+  
+  .error-message {
+    color: var(--dark-text-muted, #a0aec0);
+  }
+  
+  .help-text {
+    color: var(--dark-text-muted, #a0aec0);
+  }
+  
+  .btn-outline {
+    color: var(--primary-color, #3498db);
+    border-color: var(--primary-color, #3498db);
+  }
+  
+  .btn-outline:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+  }
+}

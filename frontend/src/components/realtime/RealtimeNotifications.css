@@ -1,0 +1,283 @@
+.realtime-notifications {
+  position: relative;
+}
+
+.notification-button {
+  border: none;
+  box-shadow: none;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.notification-button:hover {
+  background-color: rgba(24, 144, 255, 0.1);
+}
+
+.notifications-dropdown {
+  width: 400px;
+  max-height: 600px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.notifications-header {
+  padding: 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notification-permission-request {
+  padding: 16px;
+  background: #f6ffed;
+  border-bottom: 1px solid #b7eb8f;
+  text-align: center;
+}
+
+.notifications-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.notification-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+  background-color: #f5f5f5;
+}
+
+.notification-item.unread {
+  background-color: #f6ffed;
+  border-left: 3px solid #52c41a;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-title {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.notification-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-message {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #666;
+}
+
+.notification-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.notifications-footer {
+  padding: 12px 16px;
+  background: #fafafa;
+  text-align: center;
+}
+
+.connection-actions {
+  padding: 12px 16px;
+  background: #fff2e8;
+  border-top: 1px solid #ffd591;
+}
+
+/* 스크롤바 스타일링 */
+.notifications-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notifications-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 애니메이션 */
+.notification-item {
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 뱃지 애니메이션 */
+.ant-badge-count {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 다크 모드 지원 */
+.dark-mode .notifications-dropdown {
+  background: #1f1f1f;
+  border: 1px solid #333;
+}
+
+.dark-mode .notifications-header {
+  background: #262626;
+  border-bottom-color: #333;
+}
+
+.dark-mode .notification-item {
+  border-bottom-color: #333;
+}
+
+.dark-mode .notification-item:hover {
+  background-color: #262626;
+}
+
+.dark-mode .notification-item.unread {
+  background-color: #162312;
+  border-left-color: #52c41a;
+}
+
+.dark-mode .notification-message {
+  color: #ccc;
+}
+
+.dark-mode .notification-time {
+  color: #999;
+}
+
+.dark-mode .notifications-footer {
+  background: #262626;
+}
+
+.dark-mode .connection-actions {
+  background: #2b1d0e;
+  border-top-color: #d48806;
+}
+
+.dark-mode .notification-permission-request {
+  background: #162312;
+  border-bottom-color: #389e0d;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .notifications-dropdown {
+    width: 320px;
+    max-height: 500px;
+  }
+  
+  .notification-item {
+    padding: 10px 12px;
+  }
+  
+  .notifications-header {
+    padding: 12px;
+  }
+  
+  .notification-permission-request {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .notifications-dropdown {
+    width: 280px;
+    max-height: 400px;
+  }
+  
+  .notification-title {
+    font-size: 13px;
+  }
+  
+  .notification-message {
+    font-size: 12px;
+  }
+  
+  .notification-time {
+    font-size: 11px;
+  }
+}
+
+/* 드롭다운 오버레이 스타일 */
+.notifications-dropdown-overlay {
+  z-index: 1050;
+}
+
+.notifications-dropdown-overlay .ant-dropdown {
+  padding: 0;
+}
+
+/* 접근성 개선 */
+.notification-button:focus {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+}
+
+.notification-item:focus {
+  outline: 2px solid #1890ff;
+  outline-offset: -2px;
+}
+
+/* 하이 컨트라스트 모드 지원 */
+@media (prefers-contrast: high) {
+  .notification-item {
+    border-bottom: 2px solid #000;
+  }
+  
+  .notification-item.unread {
+    border-left: 5px solid #52c41a;
+    background-color: #e6f7ff;
+  }
+  
+  .notification-title {
+    font-weight: bold;
+  }
+}
+
+/* 모션 감소 설정 지원 */
+@media (prefers-reduced-motion: reduce) {
+  .notification-button,
+  .notification-item,
+  .ant-badge-count {
+    animation: none;
+    transition: none;
+  }
+}

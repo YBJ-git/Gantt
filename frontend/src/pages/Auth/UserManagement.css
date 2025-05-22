@@ -1,0 +1,376 @@
+/* 사용자 관리 페이지 스타일 */
+.user-management-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  width: 100%;
+}
+
+.user-management-container .card {
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background-color: var(--card-bg, white);
+  margin-bottom: 2rem;
+}
+
+.user-management-container .card-header {
+  background-color: var(--background-alt);
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.user-management-container .card-header h2 {
+  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.user-management-container .card-body {
+  padding: 1.5rem;
+}
+
+.text-muted {
+  color: var(--text-muted, #6c757d);
+  font-size: 0.9rem;
+}
+
+/* 필터 컨테이너 */
+.filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+.search-container {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-input {
+  padding-left: 2.5rem;
+  height: 2.75rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted, #6c757d);
+  pointer-events: none;
+}
+
+.role-filter-container {
+  width: 200px;
+}
+
+/* 테이블 스타일 */
+.table-responsive {
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.users-table th,
+.users-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.users-table th {
+  background-color: var(--table-header-bg, #f8f9fa);
+  font-weight: 600;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background-color 0.15s;
+  white-space: nowrap;
+}
+
+.users-table th:hover {
+  background-color: var(--table-header-hover-bg, #e9ecef);
+}
+
+.users-table tbody tr {
+  transition: background-color 0.15s;
+}
+
+.users-table tbody tr:hover {
+  background-color: var(--table-row-hover-bg, rgba(0, 0, 0, 0.02));
+}
+
+.users-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.no-results {
+  text-align: center;
+  padding: 2rem !important;
+  color: var(--text-muted, #6c757d);
+}
+
+/* 역할 배지 */
+.role-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.role-admin {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+}
+
+.role-manager {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.role-worker {
+  background-color: rgba(23, 162, 184, 0.15);
+  color: #17a2b8;
+}
+
+.role-user {
+  background-color: rgba(108, 117, 125, 0.15);
+  color: #6c757d;
+}
+
+/* 상태 배지 */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-active {
+  background-color: rgba(40, 167, 69, 0.15);
+  color: #28a745;
+}
+
+.status-inactive {
+  background-color: rgba(108, 117, 125, 0.15);
+  color: #6c757d;
+}
+
+/* 역할 선택 드롭다운 */
+.role-select {
+  min-width: 120px;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  height: auto;
+}
+
+/* 알림 */
+.alert {
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+}
+
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.alert-success {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+/* 로딩 상태 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--text-muted, #6c757d);
+  font-size: 1rem;
+}
+
+/* 사용자 통계 */
+.user-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color, #e0e0e0);
+}
+
+.stat-item {
+  background-color: var(--stat-bg, #f8f9fa);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-muted, #6c757d);
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 992px) {
+  .user-management-container {
+    max-width: 100%;
+    padding: 0 0.75rem;
+  }
+  
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-container,
+  .role-filter-container {
+    width: 100%;
+  }
+  
+  .user-stats {
+    justify-content: space-between;
+  }
+  
+  .stat-item {
+    flex: 1;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .user-management-container {
+    margin: 1rem auto;
+  }
+  
+  .user-management-container .card-header,
+  .user-management-container .card-body {
+    padding: 1rem;
+  }
+  
+  .users-table th,
+  .users-table td {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .role-badge,
+  .status-badge {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .user-stats {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  
+  .stat-item {
+    padding: 0.5rem 0.75rem;
+    min-width: calc(50% - 0.75rem);
+  }
+}
+
+@media (max-width: 576px) {
+  .users-table {
+    font-size: 0.8rem;
+  }
+  
+  .users-table th:nth-child(3),
+  .users-table td:nth-child(3),
+  .users-table th:nth-child(6),
+  .users-table td:nth-child(6) {
+    display: none;
+  }
+  
+  .stat-item {
+    flex: 0 0 100%;
+  }
+}
+
+/* 다크 모드 대응 */
+@media (prefers-color-scheme: dark) {
+  .user-management-container .card {
+    background-color: var(--dark-bg, #2d3748);
+  }
+  
+  .user-management-container .card-header {
+    background-color: var(--dark-header-bg, #1a202c);
+  }
+  
+  .text-muted {
+    color: var(--dark-text-muted, #a0aec0);
+  }
+  
+  .users-table th {
+    background-color: var(--dark-table-header-bg, #1a202c);
+    color: var(--dark-text, #e2e8f0);
+  }
+  
+  .users-table th:hover {
+    background-color: var(--dark-table-header-hover-bg, #2d3748);
+  }
+  
+  .users-table td {
+    border-bottom-color: var(--dark-border, #4a5568);
+  }
+  
+  .users-table tbody tr:hover {
+    background-color: var(--dark-table-row-hover-bg, rgba(255, 255, 255, 0.05));
+  }
+  
+  .stat-item {
+    background-color: var(--dark-stat-bg, #2d3748);
+  }
+  
+  .stat-label {
+    color: var(--dark-text-muted, #a0aec0);
+  }
+  
+  .stat-value {
+    color: var(--dark-text, #e2e8f0);
+  }
+  
+  .form-control {
+    background-color: var(--dark-input-bg, #2d3748);
+    border-color: var(--dark-border, #4a5568);
+    color: var(--dark-text, #e2e8f0);
+  }
+  
+  .form-control::placeholder {
+    color: var(--dark-placeholder, #a0aec0);
+  }
+  
+  .role-select {
+    background-color: var(--dark-input-bg, #2d3748);
+    color: var(--dark-text, #e2e8f0);
+    border-color: var(--dark-border, #4a5568);
+  }
+}

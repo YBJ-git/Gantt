@@ -19,12 +19,27 @@
     "axios": "^1.4.0",
     "react-chartjs-2": "^5.2.0",
     "chart.js": "^4.3.0",
-    "prop-types": "^15.8.1"
+    "prop-types": "^15.8.1",
+    "react-window": "^1.8.8",
+    "react-window-infinite-loader": "^1.0.9",
+    "react-virtualized-auto-sizer": "^1.0.20",
+    "lodash.debounce": "^4.0.8",
+    "lodash.throttle": "^4.1.1"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/user-event": "^14.4.3",
+    "jest-environment-jsdom": "^29.6.1"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "CI=false react-scripts build",
-    "test": "react-scripts test"
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
+    "test:api": "react-scripts test --testPathPattern=tests/api --watchAll=false",
+    "test:components": "react-scripts test --testPathPattern=tests/components --watchAll=false",
+    "test:ci": "CI=true react-scripts test --coverage --watchAll=false"
   },
   "eslintConfig": {
     "extends": [

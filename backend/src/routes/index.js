@@ -4,6 +4,10 @@
  */
 const express = require('express');
 const loadOptimizationRoutes = require('./loadOptimizationRoutes');
+const userRoutes = require('./userRoutes');
+const taskRoutes = require('./taskRoutes');
+const websocketRoutes = require('./websocket');
+const feedbackRoutes = require('./feedback');
 
 // 메인 라우터 생성
 const router = express.Router();
@@ -20,10 +24,13 @@ router.get('/status', (req, res) => {
 
 // 각 기능별 라우트 연결
 router.use('/load-optimization', loadOptimizationRoutes);
+router.use('/users', userRoutes);
+router.use('/tasks', taskRoutes);
+router.use('/websocket', websocketRoutes);
+router.use('/feedback', feedbackRoutes);
 
 // 추가 라우트는 여기에 등록
 // router.use('/resources', resourceRoutes);
-// router.use('/tasks', taskRoutes);
 // router.use('/reports', reportRoutes);
 // router.use('/analytics', analyticsRoutes);
 
