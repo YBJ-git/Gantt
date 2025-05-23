@@ -7,3 +7,17 @@ node_modules
 build/ 
 dist/ 
 .DS_Store 
+
+# Logs
+logs/
+*.log
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Backend specific
+backend/.env
+backend/logs/
+backend/*.sqlite
