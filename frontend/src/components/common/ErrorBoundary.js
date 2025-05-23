@@ -45,8 +45,11 @@ class ErrorBoundary extends React.Component {
     if (process.env.NODE_ENV === 'production') {
       // 예: Sentry.captureException(error, { extra: errorInfo });
       
+      // API URL 설정
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+      
       // 간단한 API 호출 예시
-      fetch('/api/log-error', {
+      fetch(`${apiUrl}/log-error`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

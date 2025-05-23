@@ -23,16 +23,12 @@ const { Title, Text } = Typography;
 const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
   const [ganttViewMode, setGanttViewMode] = useState('week');
-  const dashboardData = useSelector(state => state.dashboard?.data || {});
+  const { data: dashboardData, loading, error } = useSelector(state => state.dashboard || {});
   
   useEffect(() => {
-    // 실제 구현에서는 Redux 액션을 통해 데이터 가져오기
-    setTimeout(() => {
-      setLoading(false);
-      // dispatch(fetchDashboardData());
-    }, 1000);
+    // Redux 액션을 통해 데이터 가져오기
+    dispatch(fetchDashboardData());
   }, [dispatch]);
 
   // 더미 데이터 생성
@@ -148,7 +144,7 @@ const Dashboard = () => {
     ]
   };
 
-  const data = loading ? {} : dashboardData?.data || mockData;
+  const data = dashboardData || mockData;
 
   if (loading) {
     return (
