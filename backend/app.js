@@ -33,11 +33,39 @@ app.use(express.json()); // JSON 파싱
 app.use(express.urlencoded({ extended: true })); // URL 인코딩된 데이터 파싱
 
 // CORS 설정
-app.use(cors({
-  origin: config.cors.origin,
+const corsOptions = {
+  origin: function (origin, callback) {
+    // 개발 환경에서는 모든 origin 허용
+    if (config.app.env === 'development') {
+      callback(null, true);
+    } else if (!origin) {
+      // 같은 origin 요청 허용 (예: Postman, 서버 간 통신)
+      callback(null, true);
+    } else if (config.cors.origin === '*') {
+      // 와일드카드 설정
+      callback(null, true);
+    } else if (Array.isArray(config.cors.origin)) {
+      // 허용된 origin 목록 확인
+      if (config.cors.origin.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    } else if (config.cors.origin === origin) {
+      // 단일 origin 확인
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: config.cors.methods,
-  credentials: true
-}));
+  credentials: config.cors.credentials,
+  allowedHeaders: config.cors.allowedHeaders,
+  exposedHeaders: config.cors.exposedHeaders,
+  optionsSuccessStatus: 200 // 일부 레거시 브라우저를 위해
+};
+
+app.use(cors(corsOptions));
 
 // 로깅 설정
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
@@ -54,6 +82,23 @@ if (config.app.env === 'production') {
 // 헬스 체크 엔드포인트
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running', timestamp: new Date() });
+});
+
+// 에러 로깅 엔드포인트 (프론트엔드 ErrorBoundary에서 사용)
+app.post('/api/log-error', (req, res) => {
+  const { error, stack, componentStack, timestamp, userAgent, url } = req.body;
+  
+  // 에러 로깅
+  logger.error('Frontend Error:', {
+    error,
+    stack,
+    componentStack,
+    timestamp,
+    userAgent,
+    url
+  });
+  
+  res.status(200).json({ success: true, message: 'Error logged successfully' });
 });
 
 // API 라우터 설정
