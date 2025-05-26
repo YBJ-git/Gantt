@@ -23,6 +23,7 @@ const TaskManager = lazy(() => import('pages/TaskManager'));
 const UserProfile = lazy(() => import('pages/Profile/UserProfile'));
 const NotificationSettings = lazy(() => import('pages/Profile/NotificationSettings'));
 const SessionManagement = lazy(() => import('pages/Profile/SessionManagement'));
+const SimpleLogin = lazy(() => import('pages/SimpleLogin'));
 
 // Loading component for Suspense fallback
 const LoadingFallback = ({ message = '페이지를 로딩 중입니다...' }) => (
@@ -73,6 +74,11 @@ const routes = [
   {
     path: '/access-denied',
     component: AccessDenied,
+    public: true
+  },
+  {
+    path: '/debug-login',
+    component: SimpleLogin,
     public: true
   },
   
