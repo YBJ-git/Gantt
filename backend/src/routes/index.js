@@ -12,6 +12,7 @@ const dashboardRoutes = require('./dashboardRoutes');
 const resourceRoutes = require('./resourceRoutes');
 const taskManagementRoutes = require('./taskManagementRoutes');
 const reportsRoutes = require('./reportsRoutes');
+const healthRoutes = require('./healthRoutes');
 
 // 메인 라우터 생성
 const router = express.Router();
@@ -27,6 +28,7 @@ router.get('/status', (req, res) => {
 });
 
 // 각 기능별 라우트 연결
+router.use('/health', healthRoutes);
 router.use('/load-optimization', loadOptimizationRoutes);
 router.use('/users', userRoutes);
 router.use('/tasks', taskRoutes);

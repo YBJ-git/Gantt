@@ -12,6 +12,7 @@
     "test:performance": "jest --testPathPattern=src/tests/performance",
     "test:coverage": "jest --coverage",
     "db:migrate": "node src/database/migrate.js",
+    "db:init": "node src/scripts/init_database.js",
     "test:db": "node src/utils/test-postgresql-connection.js",
     "lint": "eslint src/**/*.js"
   },
