@@ -202,9 +202,51 @@ function validateRequest(req, res, next, schema) {
   next();
 }
 
+/**
+ * 부하 최적화 요청 데이터 검증
+ */
+const validateLoadOptimizationRequest = (req, res, next) => {
+  const schema = Joi.object({
+    projectId: Joi.number().integer().required()
+      .messages({
+        'number.base': '프로젝트 ID는 숫자여야 합니다.',
+        'number.integer': '프로젝트 ID는 정수여야 합니다.',
+        'any.required': '프로젝트 ID는 필수 항목입니다.'
+      }),
+    tasks: Joi.array().items(Joi.object({
+      id: Joi.number().integer().required(),
+      name: Joi.string().required(),
+      duration: Joi.number().integer().min(1).required(),
+      resourceRequirements: Joi.array().items(Joi.string())
+    })).required()
+      .messages({
+        'array.base': '작업 목록은 배열이어야 합니다.',
+        'any.required': '작업 목록은 필수 항목입니다.'
+      }),
+    resources: Joi.array().items(Joi.object({
+      id: Joi.number().integer().required(),
+      name: Joi.string().required(),
+      capacity: Joi.number().min(0).required(),
+      skills: Joi.array().items(Joi.string())
+    })).required()
+      .messages({
+        'array.base': '리소스 목록은 배열이어야 합니다.',
+        'any.required': '리소스 목록은 필수 항목입니다.'
+      }),
+    constraints: Joi.object({
+      maxWorkloadPerResource: Joi.number().min(1).max(24).default(8),
+      prioritizeBalance: Joi.boolean().default(true),
+      allowOvertimePercent: Joi.number().min(0).max(100).default(10)
+    }).default({})
+  });
+
+  validateRequest(req, res, next, schema);
+};
+
 module.exports = {
   validateUserRegistration,
   validateUpdateUser,
   validateTaskCreation,
-  validateTaskUpdate
+  validateTaskUpdate,
+  validateLoadOptimizationRequest
 };
