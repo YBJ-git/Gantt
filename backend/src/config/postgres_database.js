@@ -7,11 +7,12 @@ const { logger } = require('../utils/logger');
 
 // PostgreSQL 연결 설정
 const pool = new Pool({
-    host: process.env.POSTGRES_HOST || 'localhost',
-    port: process.env.POSTGRES_PORT || 5432,
-    database: process.env.POSTGRES_DB || 'myproject_db',
-    user: process.env.POSTGRES_USER || 'postgres',
-    password: process.env.POSTGRES_PASSWORD || 'postgres',
+    host: process.env.DB_HOST || process.env.POSTGRES_HOST || 'localhost',
+    port: process.env.DB_PORT || process.env.POSTGRES_PORT || 5432,
+    database: process.env.DB_NAME || process.env.POSTGRES_DB || 'myproject_db',
+    user: process.env.DB_USER || process.env.POSTGRES_USER || 'postgres',
+    password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || 'postgres',
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
     max: 20, // 최대 연결 수
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
@@ -33,11 +34,16 @@ module.exports = {
         try {
             const result = await pool.query(query, params);
             
-            // SELECT 쿼리인 경우
+            // SELECT 쿼리인 경우 - 행 배열 반환
             if (query.trim().toLowerCase().startsWith('select')) {
                 return result.rows;
-            } else {
-                // INSERT, UPDATE, DELETE 쿼리
+            } 
+            // RETURNING 절이 있는 INSERT/UPDATE 쿼리인 경우
+            else if (query.toLowerCase().includes('returning')) {
+                return result.rows;
+            }
+            // 일반적인 INSERT, UPDATE, DELETE 쿼리
+            else {
                 return {
                     id: result.rows[0]?.id || null,
                     changes: result.rowCount

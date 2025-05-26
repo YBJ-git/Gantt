@@ -5,7 +5,7 @@
 const { logger } = require('../utils/logger');
 
 // 데이터베이스 타입 설정 (환경 변수로 제어)
-const DB_TYPE = process.env.DB_TYPE || 'sqlite'; // 'sqlite' 또는 'postgres'
+const DB_TYPE = process.env.DB_TYPE || 'postgres'; // 'postgres'를 기본값으로 변경
 
 let db;
 

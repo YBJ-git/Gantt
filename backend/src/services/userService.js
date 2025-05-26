@@ -12,22 +12,22 @@ const { BadRequestError, AuthenticationError, NotFoundError } = require('../util
 const createUser = async (userData) => {
   try {
     // 사용자명 중복 확인
-    const [existingUsernames] = await db.execute(
+    const existingUsernames = await db.execute(
       'SELECT COUNT(*) as count FROM users WHERE username = $1',
       [userData.username]
     );
     
-    if (existingUsernames[0].count > 0) {
+    if (existingUsernames[0]?.count > 0) {
       throw new BadRequestError('이미 사용 중인 사용자명입니다.');
     }
     
     // 이메일 중복 확인
-    const [existingEmails] = await db.execute(
+    const existingEmails = await db.execute(
       'SELECT COUNT(*) as count FROM users WHERE email = $1',
       [userData.email]
     );
     
-    if (existingEmails[0].count > 0) {
+    if (existingEmails[0]?.count > 0) {
       throw new BadRequestError('이미 사용 중인 이메일입니다.');
     }
     
@@ -35,7 +35,7 @@ const createUser = async (userData) => {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     
     // 사용자 생성
-    const [result] = await db.execute(
+    const result = await db.execute(
       `INSERT INTO users (
         username, email, password, first_name, last_name, role, status
       ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, username, email, role, status`,
@@ -65,7 +65,7 @@ const createUser = async (userData) => {
 const authenticateUser = async (username, password) => {
   try {
     // 사용자 조회
-    const [users] = await db.execute(
+    const users = await db.execute(
       'SELECT * FROM users WHERE username = $1',
       [username]
     );
@@ -97,7 +97,7 @@ const authenticateUser = async (username, password) => {
  */
 const getAllUsers = async () => {
   try {
-    const [users] = await db.execute(
+    const users = await db.execute(
       'SELECT id, username, email, first_name, last_name, role, status, created_at, updated_at FROM users ORDER BY id'
     );
     
@@ -112,7 +112,7 @@ const getAllUsers = async () => {
  */
 const getUserById = async (userId) => {
   try {
-    const [users] = await db.execute(
+    const users = await db.execute(
       'SELECT id, username, email, first_name, last_name, role, status, created_at, updated_at FROM users WHERE id = $1',
       [userId]
     );
@@ -141,24 +141,24 @@ const updateUser = async (userId, updateData) => {
     
     // 사용자명 변경 시 중복 확인
     if (updateData.username && updateData.username !== user.username) {
-      const [existingUsernames] = await db.execute(
+      const existingUsernames = await db.execute(
         'SELECT COUNT(*) as count FROM users WHERE username = $1 AND id != $2',
         [updateData.username, userId]
       );
       
-      if (existingUsernames[0].count > 0) {
+      if (existingUsernames[0]?.count > 0) {
         throw new BadRequestError('이미 사용 중인 사용자명입니다.');
       }
     }
     
     // 이메일 변경 시 중복 확인
     if (updateData.email && updateData.email !== user.email) {
-      const [existingEmails] = await db.execute(
+      const existingEmails = await db.execute(
         'SELECT COUNT(*) as count FROM users WHERE email = $1 AND id != $2',
         [updateData.email, userId]
       );
       
-      if (existingEmails[0].count > 0) {
+      if (existingEmails[0]?.count > 0) {
         throw new BadRequestError('이미 사용 중인 이메일입니다.');
       }
     }
@@ -190,7 +190,7 @@ const updateUser = async (userId, updateData) => {
       RETURNING id, username, email, first_name, last_name, role, status
     `;
     
-    const [result] = await db.execute(query, updateValues);
+    const result = await db.execute(query, updateValues);
     
     return result[0];
   } catch (error) {
@@ -207,7 +207,7 @@ const updateUser = async (userId, updateData) => {
 const changePassword = async (userId, currentPassword, newPassword) => {
   try {
     // 사용자 조회
-    const [users] = await db.execute(
+    const users = await db.execute(
       'SELECT * FROM users WHERE id = $1',
       [userId]
     );

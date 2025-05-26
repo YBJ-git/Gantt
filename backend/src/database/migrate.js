@@ -43,6 +43,7 @@ async function createTables() {
       first_name VARCHAR(50),
       last_name VARCHAR(50),
       role user_role NOT NULL DEFAULT 'user',
+      status VARCHAR(20) DEFAULT 'active',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
@@ -227,7 +228,7 @@ async function insertInitialData() {
   logger.info('초기 데이터 삽입 중...');
 
   // 사용자 데이터 삽입
-  const [userExists] = await db.execute('SELECT COUNT(*) as count FROM users WHERE username = $1', ['admin']);
+  const userExists = await db.execute('SELECT COUNT(*) as count FROM users WHERE username = $1', ['admin']);
   
   if (userExists[0].count === '0') {
     await db.execute(`
@@ -239,11 +240,11 @@ async function insertInitialData() {
   }
 
   // 팀 데이터 삽입
-  const [teamExists] = await db.execute('SELECT COUNT(*) as count FROM teams WHERE name = $1', ['개발팀']);
+  const teamExists = await db.execute('SELECT COUNT(*) as count FROM teams WHERE name = $1', ['개발팀']);
   
   if (teamExists[0].count === '0') {
     // 팀 생성 및 ID 받기
-    const [teamResult] = await db.execute(`
+    const teamResult = await db.execute(`
       INSERT INTO teams (name, description)
       VALUES ($1, $2)
       RETURNING id
