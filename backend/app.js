@@ -33,39 +33,7 @@ app.use(express.json()); // JSON 파싱
 app.use(express.urlencoded({ extended: true })); // URL 인코딩된 데이터 파싱
 
 // CORS 설정
-const corsOptions = {
-  origin: function (origin, callback) {
-    // 개발 환경에서는 모든 origin 허용
-    if (config.app.env === 'development') {
-      callback(null, true);
-    } else if (!origin) {
-      // 같은 origin 요청 허용 (예: Postman, 서버 간 통신)
-      callback(null, true);
-    } else if (config.cors.origin === '*') {
-      // 와일드카드 설정
-      callback(null, true);
-    } else if (Array.isArray(config.cors.origin)) {
-      // 허용된 origin 목록 확인
-      if (config.cors.origin.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    } else if (config.cors.origin === origin) {
-      // 단일 origin 확인
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: config.cors.methods,
-  credentials: config.cors.credentials,
-  allowedHeaders: config.cors.allowedHeaders,
-  exposedHeaders: config.cors.exposedHeaders,
-  optionsSuccessStatus: 200 // 일부 레거시 브라우저를 위해
-};
-
-app.use(cors(corsOptions));
+app.use(cors(config.cors));
 
 // 로깅 설정
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));

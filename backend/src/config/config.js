@@ -33,11 +33,36 @@ module.exports = {
   },
   
   cors: {
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
+    origin: (() => {
+      // 허용할 origin 목록
+      const allowedOrigins = [
+        'https://tubular-vacherin-352fde.netlify.app',
+        'https://workload-optimization-system.netlify.app',
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001'
+      ];
+      
+      // 환경변수에서 추가 origin이 있으면 포함
+      if (process.env.CORS_ORIGIN) {
+        const additionalOrigins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
+        allowedOrigins.push(...additionalOrigins);
+      }
+      
+      // 개발 환경에서는 모든 origin 허용
+      if (process.env.NODE_ENV === 'development') {
+        return true;
+      }
+      
+      return allowedOrigins;
+    })(),
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    exposedHeaders: ['X-Total-Count', 'X-Page-Count']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
   },
   
   redis: {
