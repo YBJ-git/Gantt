@@ -34,12 +34,12 @@ BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION update_user_timestamp();
 
--- 관리자 계정 생성 (비밀번호: Admin123)
+-- 관리자 계정 생성 (비밀번호: admin123)
 INSERT INTO users (username, email, password, first_name, last_name, role, status)
 VALUES (
   'admin',
   'admin@example.com',
-  '$2b$10$3euPcmQFCiblsZB8HeHYbODDt6.sn9J5NwRZEQcbFGwtGXctfxAk2',
+  '$2b$10$oEJ6Cwpro6.6ij465/3RIultToY5AVuLCKlolbjrcgLCQZ78f2qNy',
   '관리자',
   '계정',
   'admin',
