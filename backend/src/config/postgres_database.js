@@ -6,24 +6,52 @@ const { Pool } = require('pg');
 const { logger } = require('../utils/logger');
 
 // PostgreSQL 연결 설정
-const pool = new Pool({
-    host: process.env.DB_HOST || process.env.POSTGRES_HOST || 'localhost',
-    port: process.env.DB_PORT || process.env.POSTGRES_PORT || 5432,
-    database: process.env.DB_NAME || process.env.POSTGRES_DB || 'myproject_db',
-    user: process.env.DB_USER || process.env.POSTGRES_USER || 'postgres',
-    password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || 'postgres',
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    max: 20, // 최대 연결 수
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-});
+let poolConfig;
+
+if (process.env.DATABASE_URL) {
+    // Render에서 제공하는 DATABASE_URL 사용 (우선순위)
+    poolConfig = {
+        connectionString: process.env.DATABASE_URL,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+    };
+} else {
+    // 개별 환경변수 사용 (폴백)
+    poolConfig = {
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 5432,
+        database: process.env.DB_NAME || 'myproject_db',
+        user: process.env.DB_USER || 'postgres',
+        password: process.env.DB_PASSWORD || 'postgres',
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+    };
+}
+
+const pool = new Pool(poolConfig);
 
 // 연결 테스트
 pool.connect((err, client, release) => {
     if (err) {
         logger.error('PostgreSQL 데이터베이스 연결 오류:', err.message);
+        console.error('=== PostgreSQL 연결 실패 상세 정보 ===');
+        console.error('DATABASE_URL 존재:', !!process.env.DATABASE_URL);
+        console.error('DB_HOST:', process.env.DB_HOST);
+        console.error('DB_NAME:', process.env.DB_NAME);
+        console.error('DB_USER:', process.env.DB_USER);
+        console.error('Error:', err.message);
+        console.error('Code:', err.code);
     } else {
         logger.info('PostgreSQL 데이터베이스에 연결되었습니다.');
+        console.log('=== PostgreSQL 연결 성공 ===');
+        console.log('DATABASE_URL 사용:', !!process.env.DATABASE_URL);
+        if (!process.env.DATABASE_URL) {
+            console.log('개별 환경변수 사용 - Host:', process.env.DB_HOST);
+        }
         release();
     }
 });
