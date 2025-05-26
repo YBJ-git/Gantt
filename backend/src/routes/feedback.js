@@ -1,6 +1,6 @@
 const express = require('express');
 const { body, validationResult, query } = require('express-validator');
-const { auth, authorize } = require('../middleware/auth');
+const { authenticateJWT, authorizeRoles } = require('../middleware/authMiddleware');
 const { logger } = require('../utils/logger');
 
 const router = express.Router();
@@ -19,7 +19,7 @@ const feedbackValidation = [
 ];
 
 // 피드백 제출
-router.post('/', auth, feedbackValidation, async (req, res) => {
+router.post('/', authenticateJWT, feedbackValidation, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -79,7 +79,7 @@ router.post('/', auth, feedbackValidation, async (req, res) => {
 });
 
 // 피드백 목록 조회
-router.get('/', auth, authorize(['admin', 'manager']), async (req, res) => {
+router.get('/', authenticateJWT, authorizeRoles(['admin', 'manager']), async (req, res) => {
   try {
     const {
       page = 1,
@@ -151,7 +151,7 @@ router.get('/', auth, authorize(['admin', 'manager']), async (req, res) => {
 });
 
 // 특정 피드백 조회
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', authenticateJWT, async (req, res) => {
   try {
     const feedbackId = parseInt(req.params.id);
     const feedback = feedbacks.find(f => f.id === feedbackId);
@@ -185,7 +185,7 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 // 피드백 상태 업데이트
-router.patch('/:id/status', auth, authorize(['admin', 'manager']), async (req, res) => {
+router.patch('/:id/status', authenticateJWT, authorizeRoles(['admin', 'manager']), async (req, res) => {
   try {
     const feedbackId = parseInt(req.params.id);
     const { status, comment } = req.body;
@@ -250,7 +250,7 @@ router.patch('/:id/status', auth, authorize(['admin', 'manager']), async (req, r
 });
 
 // 피드백에 응답 추가
-router.post('/:id/response', auth, authorize(['admin', 'manager']), async (req, res) => {
+router.post('/:id/response', authenticateJWT, authorizeRoles(['admin', 'manager']), async (req, res) => {
   try {
     const feedbackId = parseInt(req.params.id);
     const { content, isPublic = true } = req.body;
@@ -313,7 +313,7 @@ router.post('/:id/response', auth, authorize(['admin', 'manager']), async (req, 
 });
 
 // 피드백 통계 조회
-router.get('/stats/overview', auth, authorize(['admin', 'manager']), async (req, res) => {
+router.get('/stats/overview', authenticateJWT, authorizeRoles(['admin', 'manager']), async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
@@ -393,7 +393,7 @@ router.get('/stats/overview', auth, authorize(['admin', 'manager']), async (req,
 });
 
 // 피드백 검색
-router.get('/search', auth, async (req, res) => {
+router.get('/search', authenticateJWT, async (req, res) => {
   try {
     const { q, type, status, priority } = req.query;
 
@@ -445,7 +445,7 @@ router.get('/search', auth, async (req, res) => {
 });
 
 // 피드백 할당
-router.patch('/:id/assign', auth, authorize(['admin', 'manager']), async (req, res) => {
+router.patch('/:id/assign', authenticateJWT, authorizeRoles(['admin', 'manager']), async (req, res) => {
   try {
     const feedbackId = parseInt(req.params.id);
     const { assigneeId } = req.body;
@@ -491,7 +491,7 @@ router.patch('/:id/assign', auth, authorize(['admin', 'manager']), async (req, r
 });
 
 // 피드백 삭제
-router.delete('/:id', auth, authorize(['admin']), async (req, res) => {
+router.delete('/:id', authenticateJWT, authorizeRoles(['admin']), async (req, res) => {
   try {
     const feedbackId = parseInt(req.params.id);
     const feedbackIndex = feedbacks.findIndex(f => f.id === feedbackId);
