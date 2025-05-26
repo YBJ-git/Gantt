@@ -20,6 +20,9 @@ const apiRouter = require('./src/routes');
 // 오류 처리 미들웨어 가져오기
 const { globalErrorHandler, notFoundHandler } = require('./src/utils/errorHandler');
 
+// 데이터베이스 초기화 모듈 가져오기
+const DatabaseInitializer = require('./src/utils/DatabaseInitializer');
+
 // Express 앱 생성
 const app = express();
 
@@ -117,10 +120,19 @@ app.wsServer = wsServer;
 
 // 서버 시작
 const PORT = config.app.port;
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   logger.info(`서버가 포트 ${PORT}에서 실행 중입니다.`);
   logger.info(`환경: ${config.app.env}`);
   logger.info(`WebSocket 서버가 /ws 경로에서 실행 중입니다.`);
+  
+  // 데이터베이스 자동 초기화
+  try {
+    const db = require('./src/config/database');
+    const dbInitializer = new DatabaseInitializer(db);
+    await dbInitializer.initialize();
+  } catch (error) {
+    logger.error('데이터베이스 초기화 중 오류 발생:', error);
+  }
 });
 
 // 예기치 않은 오류 처리

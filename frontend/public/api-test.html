@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간트 차트 시스템 - API 테스트</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="password"] {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .login-section {
+            background-color: #e8f4fd;
+            border: 1px solid #b8daff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 간트 차트 시스템 - API 연결 테스트</h1>
+        
+        <!-- 서버 상태 확인 -->
+        <div class="test-section">
+            <h3>📡 서버 연결 상태</h3>
+            <button onclick="checkServerStatus()">서버 상태 확인</button>
+            <button onclick="checkDatabaseStatus()">데이터베이스 상태 확인</button>
+            <button onclick="checkSystemHealth()">전체 시스템 확인</button>
+            <div id="serverStatus"></div>
+        </div>
+
+        <!-- 로그인 테스트 -->
+        <div class="test-section login-section">
+            <h3>🔐 로그인 테스트</h3>
+            <div class="form-group">
+                <label for="username">사용자명:</label>
+                <input type="text" id="username" value="admin" placeholder="사용자명">
+            </div>
+            <div class="form-group">
+                <label for="password">비밀번호:</label>
+                <input type="password" id="password" value="admin123" placeholder="비밀번호">
+            </div>
+            <button onclick="testLogin()">로그인 테스트</button>
+            <button onclick="testQuickLogin('admin', 'admin123')">Admin 로그인</button>
+            <button onclick="testQuickLogin('tester', 'Test123')">Tester 로그인</button>
+            <div id="loginStatus"></div>
+        </div>
+
+        <!-- 사용자 정보 확인 -->
+        <div class="test-section">
+            <h3>👤 사용자 정보</h3>
+            <button onclick="getCurrentUser()" id="getCurrentUserBtn" disabled>내 정보 조회</button>
+            <button onclick="getAllUsers()" id="getAllUsersBtn" disabled>모든 사용자 조회 (관리자)</button>
+            <div id="userInfo"></div>
+        </div>
+
+        <!-- API 엔드포인트 테스트 -->
+        <div class="test-section">
+            <h3>🔧 API 엔드포인트 테스트</h3>
+            <button onclick="testEndpoint('/api/status', 'GET')">API 상태</button>
+            <button onclick="testEndpoint('/api/health', 'GET')">헬스 체크</button>
+            <button onclick="testEndpoint('/api/health/database', 'GET')">DB 연결</button>
+            <button onclick="testEndpoint('/api/health/system', 'GET')">시스템 상태</button>
+            <div id="endpointResults"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://gantt-c1oh.onrender.com';
+        let authToken = null;
+
+        // 상태 표시 헬퍼 함수
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showResult(elementId, data, type = 'info') {
+            const element = document.getElementById(elementId);
+            const jsonStr = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+            element.innerHTML = `
+                <div class="status ${type}">응답 결과:</div>
+                <pre>${jsonStr}</pre>
+            `;
+        }
+
+        // 서버 상태 확인
+        async function checkServerStatus() {
+            showStatus('serverStatus', '서버 상태를 확인하는 중...', 'info');
+            
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    showStatus('serverStatus', '✅ 서버가 정상적으로 실행 중입니다!', 'success');
+                } else {
+                    showStatus('serverStatus', `⚠️ 서버 응답 오류: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                showStatus('serverStatus', `❌ 서버 연결 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 데이터베이스 상태 확인
+        async function checkDatabaseStatus() {
+            showStatus('serverStatus', '데이터베이스 상태를 확인하는 중...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/health/database`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('serverStatus', data, 'success');
+                } else {
+                    showResult('serverStatus', data, 'error');
+                }
+            } catch (error) {
+                showStatus('serverStatus', `❌ 데이터베이스 상태 확인 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 전체 시스템 상태 확인
+        async function checkSystemHealth() {
+            showStatus('serverStatus', '시스템 상태를 확인하는 중...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/health/system`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('serverStatus', data, data.status === 'healthy' ? 'success' : 'error');
+                } else {
+                    showResult('serverStatus', data, 'error');
+                }
+            } catch (error) {
+                showStatus('serverStatus', `❌ 시스템 상태 확인 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 로그인 테스트
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                showStatus('loginStatus', '❌ 사용자명과 비밀번호를 모두 입력해주세요.', 'error');
+                return;
+            }
+
+            await performLogin(username, password);
+        }
+
+        async function testQuickLogin(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+            await performLogin(username, password);
+        }
+
+        async function performLogin(username, password) {
+            showStatus('loginStatus', `로그인 시도 중... (${username})`, 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/users/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authToken = data.token;
+                    document.getElementById('getCurrentUserBtn').disabled = false;
+                    document.getElementById('getAllUsersBtn').disabled = data.user.role !== 'admin';
+                    
+                    showResult('loginStatus', {
+                        message: '✅ 로그인 성공!',
+                        user: data.user,
+                        token: data.token ? '토큰 발급됨' : '토큰 없음'
+                    }, 'success');
+                } else {
+                    showResult('loginStatus', {
+                        error: '❌ 로그인 실패',
+                        message: data.message || '알 수 없는 오류'
+                    }, 'error');
+                }
+            } catch (error) {
+                showStatus('loginStatus', `❌ 로그인 요청 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 현재 사용자 정보 조회
+        async function getCurrentUser() {
+            if (!authToken) {
+                showStatus('userInfo', '❌ 먼저 로그인해주세요.', 'error');
+                return;
+            }
+
+            showStatus('userInfo', '사용자 정보를 조회하는 중...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/users/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('userInfo', data, 'success');
+                } else {
+                    showResult('userInfo', data, 'error');
+                }
+            } catch (error) {
+                showStatus('userInfo', `❌ 사용자 정보 조회 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 모든 사용자 조회
+        async function getAllUsers() {
+            if (!authToken) {
+                showStatus('userInfo', '❌ 먼저 로그인해주세요.', 'error');
+                return;
+            }
+
+            showStatus('userInfo', '모든 사용자 정보를 조회하는 중...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('userInfo', data, 'success');
+                } else {
+                    showResult('userInfo', data, 'error');
+                }
+            } catch (error) {
+                showStatus('userInfo', `❌ 사용자 목록 조회 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // API 엔드포인트 테스트
+        async function testEndpoint(endpoint, method = 'GET') {
+            showStatus('endpointResults', `${method} ${endpoint} 요청 중...`, 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    method: method,
+                    headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('endpointResults', {
+                        endpoint: endpoint,
+                        status: response.status,
+                        data: data
+                    }, 'success');
+                } else {
+                    showResult('endpointResults', {
+                        endpoint: endpoint,
+                        status: response.status,
+                        error: data
+                    }, 'error');
+                }
+            } catch (error) {
+                showStatus('endpointResults', `❌ ${endpoint} 요청 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 페이지 로드 시 자동으로 서버 상태 확인
+        window.addEventListener('load', () => {
+            checkServerStatus();
+        });
+    </script>
+</body>
+</html>
