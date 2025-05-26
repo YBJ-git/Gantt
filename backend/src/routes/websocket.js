@@ -1,11 +1,11 @@
 const express = require('express');
-const { auth } = require('../middleware/auth');
+const { authenticateJWT } = require('../middleware/authMiddleware');
 const { logger } = require('../utils/logger');
 
 const router = express.Router();
 
 // WebSocket 연결 상태 조회
-router.get('/status', auth, (req, res) => {
+router.get('/status', authenticateJWT, (req, res) => {
   try {
     const wsServer = req.app.wsServer;
     const stats = wsServer.getStats();
@@ -28,7 +28,7 @@ router.get('/status', auth, (req, res) => {
 });
 
 // 특정 방의 연결된 클라이언트 조회
-router.get('/rooms/:roomId/clients', auth, (req, res) => {
+router.get('/rooms/:roomId/clients', authenticateJWT, (req, res) => {
   try {
     const { roomId } = req.params;
     const wsServer = req.app.wsServer;
@@ -52,7 +52,7 @@ router.get('/rooms/:roomId/clients', auth, (req, res) => {
 });
 
 // 사용자의 WebSocket 세션 조회
-router.get('/users/:userId/sessions', auth, (req, res) => {
+router.get('/users/:userId/sessions', authenticateJWT, (req, res) => {
   try {
     const { userId } = req.params;
     const wsServer = req.app.wsServer;
@@ -76,7 +76,7 @@ router.get('/users/:userId/sessions', auth, (req, res) => {
 });
 
 // 특정 사용자에게 알림 전송
-router.post('/notifications/send', auth, (req, res) => {
+router.post('/notifications/send', authenticateJWT, (req, res) => {
   try {
     const { targetUserId, title, message, type = 'info', data = {} } = req.body;
     const wsServer = req.app.wsServer;
@@ -114,7 +114,7 @@ router.post('/notifications/send', auth, (req, res) => {
 });
 
 // 전체 브로드캐스트 알림 전송 (관리자만)
-router.post('/notifications/broadcast', auth, (req, res) => {
+router.post('/notifications/broadcast', authenticateJWT, (req, res) => {
   try {
     // 관리자 권한 확인
     if (req.user.role !== 'admin') {
@@ -160,7 +160,7 @@ router.post('/notifications/broadcast', auth, (req, res) => {
 });
 
 // 방에 메시지 전송
-router.post('/rooms/:roomId/messages', auth, (req, res) => {
+router.post('/rooms/:roomId/messages', authenticateJWT, (req, res) => {
   try {
     const { roomId } = req.params;
     const { message, type = 'text' } = req.body;
@@ -198,7 +198,7 @@ router.post('/rooms/:roomId/messages', auth, (req, res) => {
 });
 
 // WebSocket 연결 강제 종료 (관리자만)
-router.delete('/clients/:clientId', auth, (req, res) => {
+router.delete('/clients/:clientId', authenticateJWT, (req, res) => {
   try {
     // 관리자 권한 확인
     if (req.user.role !== 'admin') {
@@ -245,7 +245,7 @@ router.delete('/clients/:clientId', auth, (req, res) => {
 });
 
 // WebSocket 서버 재시작 (관리자만)
-router.post('/restart', auth, (req, res) => {
+router.post('/restart', authenticateJWT, (req, res) => {
   try {
     // 관리자 권한 확인
     if (req.user.role !== 'admin') {
