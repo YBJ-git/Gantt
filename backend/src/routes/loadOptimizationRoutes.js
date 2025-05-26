@@ -6,7 +6,6 @@ const express = require('express');
 const router = express.Router();
 const loadOptimizationController = require('../controllers/loadOptimizationController');
 const { authenticateJWT } = require('../middleware/authMiddleware');
-const { validateLoadOptimizationRequest } = require('../middleware/validationMiddleware');
 
 // 모든 라우트에 인증 미들웨어 적용
 router.use(authenticateJWT);
@@ -21,7 +20,7 @@ router.get('/resource', loadOptimizationController.getResourceLoad);
 router.get('/recommendations', loadOptimizationController.getLoadOptimizationRecommendations);
 
 // 작업 자동 재분배
-router.post('/auto-distribute', validateLoadOptimizationRequest, loadOptimizationController.autoDistributeTasks);
+router.post('/auto-distribute', loadOptimizationController.autoDistributeTasks);
 
 // 부하 최적화 적용
 router.post('/apply', loadOptimizationController.applyLoadOptimization);
