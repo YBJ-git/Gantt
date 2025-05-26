@@ -233,7 +233,7 @@ async function insertInitialData() {
     await db.execute(`
       INSERT INTO users (username, email, password, first_name, last_name, role)
       VALUES ($1, $2, $3, $4, $5, $6)
-    `, ['admin', 'admin@example.com', '$2b$10$xqSRxmHZxJT6Aq5eUxj4MeMVfuW9z5nzq64CcK9bN57Hx07V3bhFS', '관리자', '사용자', 'admin']);
+    `, ['admin', 'admin@example.com', '$2b$10$vfvp9h2mad7lYYkCCLLKberIQ0E7MO2c1SfIRIYVjzyxcr/9g98aa', '관리자', '사용자', 'admin']);
     
     logger.info('관리자 사용자 생성됨.');
   }
