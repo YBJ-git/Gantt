@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 // API URL 설정
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'https://gantt-c1oh.onrender.com';
+
+console.log('🔔 NotificationService - API_URL:', API_URL);
+console.log('🔔 NotificationService - REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
 
 // Axios 인스턴스 생성
 const api = axios.create({
@@ -48,7 +51,7 @@ const notificationService = {
     try {
       const { page = 1, limit = 10, read = null, type = null } = params;
       
-      let url = `/notifications?page=${page}&limit=${limit}`;
+      let url = `/api/notifications?page=${page}&limit=${limit}`;
       
       if (read !== null) {
         url += `&read=${read}`;
@@ -68,7 +71,7 @@ const notificationService = {
   // 알림 읽음 처리
   async markAsRead(notificationId) {
     try {
-      const response = await api.put(`/notifications/${notificationId}/read`);
+      const response = await api.put(`/api/notifications/${notificationId}/read`);
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error));
@@ -78,7 +81,7 @@ const notificationService = {
   // 모든 알림 읽음 처리
   async markAllAsRead() {
     try {
-      const response = await api.put('/notifications/read-all');
+      const response = await api.put('/api/notifications/read-all');
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error));
@@ -88,7 +91,7 @@ const notificationService = {
   // 알림 설정 조회
   async getNotificationSettings() {
     try {
-      const response = await api.get('/notifications/settings');
+      const response = await api.get('/api/notifications/settings');
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error));
@@ -98,7 +101,7 @@ const notificationService = {
   // 알림 설정 업데이트
   async updateNotificationSettings(settings) {
     try {
-      const response = await api.put('/notifications/settings', settings);
+      const response = await api.put('/api/notifications/settings', settings);
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error));
@@ -108,7 +111,7 @@ const notificationService = {
   // 특정 유형의 알림 활성화/비활성화
   async toggleNotificationType(type, enabled) {
     try {
-      const response = await api.put(`/notifications/settings/type/${type}`, { enabled });
+      const response = await api.put(`/api/notifications/settings/type/${type}`, { enabled });
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error));
@@ -118,7 +121,7 @@ const notificationService = {
   // 특정 채널의 알림 활성화/비활성화
   async toggleNotificationChannel(channel, enabled) {
     try {
-      const response = await api.put(`/notifications/settings/channel/${channel}`, { enabled });
+      const response = await api.put(`/api/notifications/settings/channel/${channel}`, { enabled });
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error));

@@ -41,7 +41,7 @@ const dashboardService = {
   // 대시보드 데이터 조회
   async getDashboardData() {
     try {
-      const response = await api.get('/dashboard/data');
+      const response = await api.get('/api/dashboard/data');
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error));
@@ -55,7 +55,7 @@ const dashboardService = {
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
       
-      const response = await api.get(`/dashboard/heatmap?${params.toString()}`);
+      const response = await api.get(`/api/dashboard/heatmap?${params.toString()}`);
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error));

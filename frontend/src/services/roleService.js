@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 // API URL 설정
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'https://gantt-c1oh.onrender.com';
+
+console.log('👥 RoleService - API_URL:', API_URL);
+console.log('👥 RoleService - REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
 
 // Axios 인스턴스 생성
 const api = axios.create({
@@ -29,7 +32,7 @@ const roleService = {
   // 모든 역할 조회
   getAllRoles: async () => {
     try {
-      const response = await api.get('/roles');
+      const response = await api.get('/api/roles');
       return response.data;
     } catch (error) {
       throw handleError(error);
