@@ -13,10 +13,26 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import moment from 'moment';
 import { fetchDashboardData } from '../redux/actions/dashboardActions';
-import LoadGauge from '../components/feature/LoadOptimization/LoadGauge';
-import LoadHeatmap from '../components/feature/LoadOptimization/LoadHeatmap';
-import ProjectGanttChart from '../components/feature/TaskManagement/ProjectGanttChart';
 import './Dashboard.scss';
+
+// 안전한 컴포넌트 fallback
+const SafeLoadGauge = ({ value, capacity, size }) => (
+  <div style={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #ccc', borderRadius: '50%' }}>
+    {value}%
+  </div>
+);
+
+const SafeLoadHeatmap = ({ data, startDate, endDate, compact }) => (
+  <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+    히트맵 (개발 중)
+  </div>
+);
+
+const SafeProjectGanttChart = ({ tasks, resources, viewMode }) => (
+  <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+    간트 차트 (개발 중)
+  </div>
+);
 
 const { Title, Text } = Typography;
 
@@ -281,7 +297,7 @@ const Dashboard = () => {
             } 
             className="gantt-chart-card"
           >
-            <ProjectGanttChart 
+            <SafeProjectGanttChart 
               tasks={ganttChartData.tasks} 
               resources={ganttChartData.resources}
               viewMode={ganttViewMode}
@@ -314,7 +330,7 @@ const Dashboard = () => {
                           {resource.utilization}% 활용
                         </div>
                       </div>
-                      <LoadGauge 
+                      <SafeLoadGauge 
                         value={resource.utilization} 
                         capacity={resource.capacity}
                         size={60}
@@ -371,7 +387,7 @@ const Dashboard = () => {
       <Row gutter={[16, 16]} className="bottom-row">
         <Col xs={24} lg={16}>
           <Card title="부하 히트맵" className="heatmap-card">
-            <LoadHeatmap 
+            <SafeLoadHeatmap 
               data={safeData.heatmapData}
               startDate="2025-05-01"
               endDate="2025-05-31"
