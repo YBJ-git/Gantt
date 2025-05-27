@@ -1,181 +1,189 @@
 /**
- * 작업 부하체크 간트 차트 시스템 백엔드 애플리케이션
+ * 간트 차트 시스템 백엔드 애플리케이션 (간단 버전)
+ * WebSocket 제거하고 기본 Express 서버만 구동
  */
 const express = require('express');
-const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
-const config = require('./src/config/config');
 const { logger } = require('./src/utils/logger');
-
-// WebSocket 서버 가져오기
-const WebSocketServer = require('./src/websocket/WebSocketServer');
-
-// 라우터 가져오기
-const apiRouter = require('./src/routes');
-
-// 오류 처리 미들웨어 가져오기
-const { globalErrorHandler, notFoundHandler } = require('./src/utils/errorHandler');
-
-// 데이터베이스 초기화 모듈 가져오기
-const DatabaseInitializer = require('./src/utils/DatabaseInitializer');
 
 // Express 앱 생성
 const app = express();
 
-// HTTP 서버 생성 (WebSocket을 위해 필요)
-const server = http.createServer(app);
-
-// 미들웨어 설정
+// 기본 미들웨어 설정
 app.use(helmet()); // 보안 헤더 설정
 app.use(compression()); // 응답 압축
 app.use(express.json()); // JSON 파싱
 app.use(express.urlencoded({ extended: true })); // URL 인코딩된 데이터 파싱
 
-// CORS 설정
-app.use(cors(config.cors));
+// CORS 설정 (간단 버전)
+app.use(cors({
+  origin: [
+    'https://tubular-vacherin-352fde.netlify.app',
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}));
 
 // 로깅 설정
-app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
-
-// 속도 제한 설정
-if (config.app.env === 'production') {
-  app.use(rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15분
-    max: parseInt(process.env.RATE_LIMIT_MAX) || 100, // IP당 최대 요청 수
-    message: { error: '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.' }
-  }));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('combined'));
 }
 
-// 헬스 체크 엔드포인트
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running', timestamp: new Date() });
+// 기본 라우트 - 서버 상태 확인
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    message: '간트 차트 시스템 백엔드가 정상적으로 실행 중입니다',
+    timestamp: new Date(),
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
-// 에러 로깅 엔드포인트 (프론트엔드 ErrorBoundary에서 사용)
-app.post('/api/log-error', (req, res) => {
-  const { error, stack, componentStack, timestamp, userAgent, url } = req.body;
-  
-  // 에러 로깅
-  logger.error('Frontend Error:', {
-    error,
-    stack,
-    componentStack,
-    timestamp,
-    userAgent,
-    url
+// 헬스 체크 엔드포인트
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'Server is running', 
+    timestamp: new Date(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
   });
-  
-  res.status(200).json({ success: true, message: 'Error logged successfully' });
 });
 
 // API 라우터 설정
-app.use(config.app.apiPrefix, apiRouter);
+try {
+  // 사용자 라우터
+  const userRoutes = require('./src/routes/userRoutes');
+  app.use('/api/users', userRoutes);
+  
+  // 헬스체크 라우터
+  const healthRoutes = require('./src/routes/healthRoutes');
+  app.use('/api/health', healthRoutes);
+  
+  // API 상태 엔드포인트
+  app.get('/api/status', (req, res) => {
+    res.status(200).json({
+      status: 'success',
+      message: 'API가 정상적으로 작동 중입니다',
+      timestamp: new Date(),
+      version: '1.0.0',
+      endpoints: {
+        '/api/users/login': 'POST - 사용자 로그인',
+        '/api/users/register': 'POST - 사용자 등록',
+        '/api/health/system': 'GET - 시스템 상태',
+        '/api/health/database': 'GET - 데이터베이스 상태'
+      }
+    });
+  });
+  
+  console.log('✅ API 라우터 로드 성공');
+  
+} catch (error) {
+  console.error('❌ API 라우터 로드 실패:', error.message);
+  
+  // 기본 라우터라도 제공
+  app.get('/api/status', (req, res) => {
+    res.status(500).json({
+      status: 'error',
+      message: 'API 라우터 로드 실패',
+      error: error.message,
+      timestamp: new Date()
+    });
+  });
+}
+
+// 에러 로깅 엔드포인트
+app.post('/api/log-error', (req, res) => {
+  const { error, stack, timestamp } = req.body;
+  console.error('프론트엔드 오류:', { error, stack, timestamp });
+  res.status(200).json({ success: true, message: 'Error logged' });
+});
 
 // 404 처리
-app.use(notFoundHandler);
-
-// 오류 처리 미들웨어
-app.use(globalErrorHandler);
-
-// WebSocket 서버 초기화
-const wsServer = new WebSocketServer(server, {
-  path: '/ws',
-  heartbeatInterval: 30000,
-  heartbeatTimeout: 10000
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: `경로를 찾을 수 없습니다: ${req.method} ${req.originalUrl}`,
+    timestamp: new Date(),
+    availableEndpoints: [
+      'GET /',
+      'GET /health', 
+      'GET /api/status',
+      'POST /api/users/login',
+      'GET /api/health/system',
+      'GET /api/health/database'
+    ]
+  });
 });
 
-// WebSocket 이벤트 리스너
-wsServer.on('connection', ({ clientId, user, ws }) => {
-  logger.info(`WebSocket client connected: ${clientId} (User: ${user?.username || 'Anonymous'})`);
-});
-
-wsServer.on('disconnection', ({ clientId, client, code, reason }) => {
-  logger.info(`WebSocket client disconnected: ${clientId} (Code: ${code}, Reason: ${reason})`);
-});
-
-wsServer.on('room_message', ({ clientId, roomId, message, sender }) => {
-  logger.info(`Room message from ${sender?.username}: ${message.content}`);
+// 글로벌 에러 처리
+app.use((error, req, res, next) => {
+  console.error('글로벌 에러:', error);
   
-  // 여기에 메시지 저장 로직 추가 가능
-  // await messageService.saveMessage({ roomId, senderId: sender.id, content: message.content });
+  res.status(error.status || 500).json({
+    error: error.name || 'Internal Server Error',
+    message: error.message || '서버 내부 오류가 발생했습니다',
+    timestamp: new Date(),
+    path: req.originalUrl
+  });
 });
-
-wsServer.on('notification_read', ({ clientId, notificationId, userId }) => {
-  logger.info(`Notification ${notificationId} marked as read by user ${userId}`);
-  
-  // 여기에 알림 읽음 처리 로직 추가 가능
-  // await notificationService.markAsRead(notificationId, userId);
-});
-
-wsServer.on('error', (error) => {
-  logger.error('WebSocket server error:', error);
-});
-
-// WebSocket 서버를 app에 추가하여 다른 곳에서 접근 가능하게 함
-app.wsServer = wsServer;
 
 // 서버 시작
-const PORT = config.app.port;
-server.listen(PORT, async () => {
-  logger.info(`서버가 포트 ${PORT}에서 실행 중입니다.`);
-  logger.info(`환경: ${config.app.env}`);
-  logger.info(`WebSocket 서버가 /ws 경로에서 실행 중입니다.`);
+const PORT = process.env.PORT || 3000;
+
+const server = app.listen(PORT, async () => {
+  console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다`);
+  console.log(`🌍 환경: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📡 BASE URL: http://localhost:${PORT}`);
   
-  // 데이터베이스 자동 초기화
+  // 데이터베이스 초기화 시도
   try {
+    console.log('🔄 데이터베이스 초기화 시도...');
     const db = require('./src/config/database');
+    const DatabaseInitializer = require('./src/utils/DatabaseInitializer');
     const dbInitializer = new DatabaseInitializer(db);
     await dbInitializer.initialize();
+    console.log('✅ 데이터베이스 초기화 완료');
   } catch (error) {
-    logger.error('데이터베이스 초기화 중 오류 발생:', error);
+    console.error('❌ 데이터베이스 초기화 실패:', error.message);
+    console.log('⚠️ 데이터베이스 없이 서버 계속 실행');
   }
+  
+  console.log('🎉 서버 준비 완료!');
 });
 
 // 예기치 않은 오류 처리
 process.on('uncaughtException', (error) => {
-  logger.error('예기치 않은 예외 발생:', error);
-  
-  // WebSocket 서버 정리
-  if (wsServer) {
-    wsServer.close();
-  }
-  
+  console.error('❌ 예기치 않은 예외:', error);
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error('처리되지 않은 프로미스 거부:', reason);
+  console.error('❌ 처리되지 않은 프로미스 거부:', reason);
 });
 
 // 우아한 종료 처리
 process.on('SIGTERM', () => {
-  logger.info('SIGTERM 신호 수신, 서버를 종료합니다...');
-  
-  if (wsServer) {
-    wsServer.close();
-  }
-  
+  console.log('🛑 SIGTERM 신호 수신, 서버 종료 중...');
   server.close(() => {
-    logger.info('서버가 정상적으로 종료되었습니다.');
+    console.log('✅ 서버가 정상적으로 종료되었습니다');
     process.exit(0);
   });
 });
 
 process.on('SIGINT', () => {
-  logger.info('SIGINT 신호 수신, 서버를 종료합니다...');
-  
-  if (wsServer) {
-    wsServer.close();
-  }
-  
+  console.log('🛑 SIGINT 신호 수신, 서버 종료 중...');
   server.close(() => {
-    logger.info('서버가 정상적으로 종료되었습니다.');
+    console.log('✅ 서버가 정상적으로 종료되었습니다');
     process.exit(0);
   });
 });
 
-module.exports = { app, server, wsServer };
+module.exports = app;
