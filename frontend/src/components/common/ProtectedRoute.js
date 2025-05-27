@@ -26,15 +26,40 @@ const ProtectedRoute = ({
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { hasPermission, hasAllPermissions, hasAnyPermission, loading: roleLoading } = useRole();
   
+  console.log('🛡️ ProtectedRoute 상태:', {
+    user: !!user,
+    isAuthenticated,
+    authLoading,
+    roleLoading,
+    currentPath: window.location.pathname
+  });
+  
   // 로딩 중이면 로딩 표시
   if (authLoading || roleLoading) {
-    return <div className="loading-container">인증 확인 중...</div>;
+    console.log('⏳ 인증 확인 중...');
+    return (
+      <div className="loading-container" style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        flexDirection: 'column'
+      }}>
+        <div>인증 확인 중...</div>
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+          잠시만 기다려 주세요.
+        </div>
+      </div>
+    );
   }
   
   // 인증이 필요한 경우 로그인 여부 확인
   if (requireAuth && !isAuthenticated) {
-    return <Navigate to="/login" state={{ from: window.location.pathname }} />;
+    console.log('🚫 미인증 상태 - 로그인 페이지로 리디렉션');
+    return <Navigate to="/login" state={{ from: window.location.pathname }} replace />;
   }
+  
+  console.log('✅ 인증 통과 - 컴포넌트 렌더링');
   
   // 역할 확인 (간단한 역할 기반 접근 제어)
   if (requiredRoles && user) {

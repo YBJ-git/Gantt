@@ -1,8 +1,9 @@
 /**
- * 최소한의 Express 서버 - 의존성 최소화
+ * 데이터베이스 연결 Express 서버 - PostgreSQL 연동
  */
 const express = require('express');
 const cors = require('cors');
+const db = require('./database/connection');
 
 const app = express();
 
@@ -13,13 +14,38 @@ app.use(cors({
   credentials: true
 }));
 
+// 데이터베이스 초기화 (필요시)
+const initializeDatabase = async () => {
+  try {
+    const connection = await db.checkConnection();
+    console.log('📊 데이터베이스 연결 상태:', connection);
+    
+    if (connection.status === 'connected') {
+      // 데이터베이스 통계 확인
+      const stats = await db.getStats();
+      console.log('📈 데이터베이스 통계:', stats);
+      
+      // 테이블이 없으면 초기화
+      if (stats.totalTables === 0) {
+        console.log('🏗️ 빈 데이터베이스 감지 - 초기화 시작');
+        await db.initDatabase();
+      }
+    }
+  } catch (error) {
+    console.error('❌ 데이터베이스 초기화 오류:', error);
+  }
+};
+
+// 서버 시작 시 데이터베이스 초기화
+initializeDatabase();
+
 // 기본 라우트
 app.get('/', (req, res) => {
   res.json({
     status: 'OK',
-    message: '간트 차트 시스템 백엔드 실행 중',
+    message: '간트 차트 시스템 백엔드 실행 중 (PostgreSQL 연동)',
     timestamp: new Date(),
-    version: '1.0.0'
+    version: '2.0.0'
   });
 });
 
@@ -27,7 +53,7 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: 'Server is running',
+    message: 'Server is running with PostgreSQL',
     timestamp: new Date()
   });
 });
@@ -36,68 +62,85 @@ app.get('/health', (req, res) => {
 app.get('/api/status', (req, res) => {
   res.json({
     status: 'success',
-    message: 'API 정상 작동',
+    message: 'API 정상 작동 (PostgreSQL 연동)',
     timestamp: new Date(),
+    database: 'PostgreSQL',
     endpoints: [
       'GET /',
       'GET /health', 
       'GET /api/status',
-      'POST /api/users/login'
+      'POST /api/users/login',
+      'GET /api/users/me',
+      'GET /api/users',
+      'GET /api/dashboard/data',
+      'GET /api/roles',
+      'GET /api/notifications',
+      'GET /api/tasks',
+      'GET /api/resources'
     ]
   });
 });
 
-// 간단한 헬스체크 API
-app.get('/api/health/system', (req, res) => {
-  res.json({
-    status: 'healthy',
-    server: {
-      status: 'running',
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      node_version: process.version
-    },
-    environment: {
-      node_env: process.env.NODE_ENV || 'production',
-      database_url_exists: !!process.env.DATABASE_URL,
-      port: process.env.PORT || 3000
-    },
-    database: {
-      status: process.env.DATABASE_URL ? 'configured' : 'not_configured',
-      note: process.env.DATABASE_URL ? 'DATABASE_URL is set' : 'DATABASE_URL is missing'
-    }
-  });
-});
-
-// 간단한 DB 상태 확인
-app.get('/api/health/database', (req, res) => {
-  if (!process.env.DATABASE_URL) {
-    return res.status(500).json({
-      status: 'Database connection failed',
-      error: 'DATABASE_URL environment variable is not set',
-      environment: {
-        database_url_exists: false,
-        node_env: process.env.NODE_ENV || 'production'
-      }
+// 데이터베이스 상태 확인 API
+app.get('/api/health/database', async (req, res) => {
+  try {
+    const connection = await db.checkConnection();
+    const stats = await db.getStats();
+    
+    res.json({
+      status: connection.status,
+      timestamp: connection.timestamp,
+      version: connection.version,
+      statistics: stats
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Database connection failed',
+      error: error.message
     });
   }
-  
-  res.json({
-    status: 'Database URL configured',
-    environment: {
-      database_url_exists: true,
-      node_env: process.env.NODE_ENV || 'production'
-    },
-    note: 'DATABASE_URL is set but connection not tested in this minimal version'
-  });
 });
 
-// 로그인 엔드포인트 (간단 버전)
+// 시스템 상태 확인 API
+app.get('/api/health/system', async (req, res) => {
+  try {
+    const dbConnection = await db.checkConnection();
+    
+    res.json({
+      status: 'healthy',
+      server: {
+        status: 'running',
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        node_version: process.version
+      },
+      database: {
+        status: dbConnection.status,
+        type: 'PostgreSQL',
+        connected: dbConnection.status === 'connected'
+      },
+      environment: {
+        node_env: process.env.NODE_ENV || 'production',
+        database_url_exists: !!process.env.DATABASE_URL,
+        port: process.env.PORT || 3000
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'System health check failed',
+      error: error.message
+    });
+  }
+});
+
+// 로그인 엔드포인트
 app.post('/api/users/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
-    console.log('로그인 시도:', { username, timestamp: new Date() });
+    console.log('🔐 로그인 시도:', { username, timestamp: new Date() });
     
     if (!username || !password) {
       return res.status(400).json({
@@ -106,42 +149,51 @@ app.post('/api/users/login', async (req, res) => {
       });
     }
     
-    // 간단한 하드코딩된 인증 (실제 DB 연결 없이)
-    const users = {
-      'admin': { password: 'admin123', role: 'admin', email: 'admin@example.com' },
-      'tester': { password: 'Test123', role: 'user', email: 'tester@example.com' },
-      'manager': { password: 'Manager123', role: 'manager', email: 'manager@example.com' },
-      'worker': { password: 'Worker123', role: 'worker', email: 'worker@example.com' }
-    };
+    // 데이터베이스에서 사용자 조회
+    const userQuery = `
+      SELECT u.*, r.name as role_name 
+      FROM users u
+      LEFT JOIN user_roles ur ON u.id = ur.user_id
+      LEFT JOIN roles r ON ur.role_id = r.id
+      WHERE u.username = $1 AND u.password_hash = $2 AND u.status = 'active'
+    `;
     
-    const user = users[username];
+    const user = await db.queryRow(userQuery, [username, password]);
     
-    if (!user || user.password !== password) {
+    if (!user) {
+      console.log('❌ 로그인 실패:', { username, reason: 'invalid_credentials' });
       return res.status(401).json({
         success: false,
         message: '아이디 또는 비밀번호가 올바르지 않습니다.'
       });
     }
     
-    // 간단한 토큰 생성 (실제 JWT 없이)
+    // 마지막 로그인 시간 업데이트
+    await db.query('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+    
+    // 간단한 토큰 생성
     const token = Buffer.from(`${username}:${Date.now()}`).toString('base64');
     
-    console.log('로그인 성공:', { username, role: user.role });
+    console.log('✅ 로그인 성공:', { username, role: user.role_name, userId: user.id });
     
     res.json({
       success: true,
       message: '로그인 성공',
       token: token,
       user: {
-        id: Object.keys(users).indexOf(username) + 1,
-        username: username,
+        id: user.id,
+        username: user.username,
         email: user.email,
-        role: user.role
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role: user.role_name || 'user',
+        department: user.department,
+        position: user.position
       }
     });
     
   } catch (error) {
-    console.error('로그인 오류:', error);
+    console.error('❌ 로그인 오류:', error);
     res.status(500).json({
       success: false,
       message: '서버 오류가 발생했습니다.'
@@ -149,402 +201,257 @@ app.post('/api/users/login', async (req, res) => {
   }
 });
 
-// 사용자 정보 조회 (간단 버전)
-app.get('/api/users/me', (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
+// 사용자 정보 조회
+app.get('/api/users/me', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: '인증 토큰이 필요합니다.'
+      });
+    }
+    
+    // 토큰에서 사용자명 추출
+    const token = authHeader.split(' ')[1];
+    const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+    const [username] = decodedToken.split(':');
+    
+    // 데이터베이스에서 사용자 정보 조회
+    const userQuery = `
+      SELECT u.*, r.name as role_name 
+      FROM users u
+      LEFT JOIN user_roles ur ON u.id = ur.user_id
+      LEFT JOIN roles r ON ur.role_id = r.id
+      WHERE u.username = $1 AND u.status = 'active'
+    `;
+    
+    const user = await db.queryRow(userQuery, [username]);
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: '유효하지 않은 토큰입니다.'
+      });
+    }
+    
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role: user.role_name || 'user',
+        department: user.department,
+        position: user.position,
+        lastLoginAt: user.last_login_at,
+        createdAt: user.created_at
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ 사용자 정보 조회 오류:', error);
+    res.status(500).json({
       success: false,
-      message: '인증 토큰이 필요합니다.'
+      message: '사용자 정보 조회 중 오류가 발생했습니다.'
     });
   }
-  
-  res.json({
-    success: true,
-    user: {
-      id: 1,
-      username: 'admin',
-      email: 'admin@example.com',
-      firstName: '관리자',
-      lastName: '계정',
-      role: 'admin',
-      createdAt: new Date()
-    }
-  });
 });
 
-// 모든 사용자 조회 (간단 버전)
-app.get('/api/users', (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
+// 모든 사용자 조회 (관리자용)
+app.get('/api/users', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: '인증 토큰이 필요합니다.'
+      });
+    }
+    
+    const usersQuery = `
+      SELECT u.id, u.username, u.email, u.first_name, u.last_name, 
+             u.department, u.position, u.status, u.created_at,
+             r.name as role_name
+      FROM users u
+      LEFT JOIN user_roles ur ON u.id = ur.user_id
+      LEFT JOIN roles r ON ur.role_id = r.id
+      ORDER BY u.created_at DESC
+    `;
+    
+    const users = await db.queryRows(usersQuery);
+    
+    res.json({
+      success: true,
+      count: users.length,
+      users: users.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role: user.role_name || 'user',
+        department: user.department,
+        position: user.position,
+        status: user.status,
+        createdAt: user.created_at
+      }))
+    });
+    
+  } catch (error) {
+    console.error('❌ 사용자 목록 조회 오류:', error);
+    res.status(500).json({
       success: false,
-      message: '인증 토큰이 필요합니다.'
+      message: '사용자 목록 조회 중 오류가 발생했습니다.'
     });
   }
-  
-  res.json({
-    success: true,
-    count: 4,
-    users: [
-      { id: 1, username: 'admin', email: 'admin@example.com', role: 'admin', status: 'active' },
-      { id: 2, username: 'tester', email: 'tester@example.com', role: 'user', status: 'active' },
-      { id: 3, username: 'manager', email: 'manager@example.com', role: 'manager', status: 'active' },
-      { id: 4, username: 'worker', email: 'worker@example.com', role: 'worker', status: 'active' }
-    ]
-  });
 });
 
 // 대시보드 데이터 API
-app.get('/api/dashboard/data', (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: '인증 토큰이 필요합니다.'
-    });
-  }
-
-  res.json({
-    success: true,
-    data: {
-      overallLoad: 75,
-      resourcesCount: 12,
-      tasksCount: 28,
-      criticalTasks: 3,
-      overdueTasksCount: 2,
-      upcomingDeadlinesCount: 7,
-      mostLoadedResources: [
-        { id: 1, name: '김철수', utilization: 95, capacity: 40, department: '개발팀' },
-        { id: 2, name: '이영희', utilization: 88, capacity: 40, department: '디자인팀' },
-        { id: 3, name: '박지민', utilization: 82, capacity: 40, department: '개발팀' }
-      ],
-      leastLoadedResources: [
-        { id: 4, name: '최민수', utilization: 45, capacity: 40, department: '마케팅팀' },
-        { id: 5, name: '정혜린', utilization: 52, capacity: 40, department: 'QA팀' },
-        { id: 6, name: '한동석', utilization: 58, capacity: 40, department: '개발팀' }
-      ],
-      recentOptimizations: [
-        { id: 1, timestamp: '2025-05-25T14:30:00Z', description: '김철수의 작업 부하 재조정 완료' },
-        { id: 2, timestamp: '2025-05-24T11:15:00Z', description: '프로젝트 A 일정 최적화' },
-        { id: 3, timestamp: '2025-05-23T16:45:00Z', description: '리소스 배치 효율화' }
-      ],
-      upcomingDeadlines: [
-        { id: 101, name: 'UI 디자인 완료', resourceName: '이영희', deadline: '2025-06-01', priority: 'high' },
-        { id: 102, name: '백엔드 API 개발', resourceName: '김철수', deadline: '2025-06-03', priority: 'medium' },
-        { id: 103, name: '테스트 자동화', resourceName: '정혜린', deadline: '2025-06-05', priority: 'high' },
-        { id: 104, name: '마케팅 자료 준비', resourceName: '최민수', deadline: '2025-06-02', priority: 'low' }
-      ],
-      heatmapData: [
-        { date: '2025-05-20', value: 85 },
-        { date: '2025-05-21', value: 92 },
-        { date: '2025-05-22', value: 78 },
-        { date: '2025-05-23', value: 88 },
-        { date: '2025-05-24', value: 95 },
-        { date: '2025-05-25', value: 75 },
-        { date: '2025-05-26', value: 82 }
-      ]
+app.get('/api/dashboard/data', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: '인증 토큰이 필요합니다.'
+      });
     }
-  });
-});
 
-// 역할 정보 API
-app.get('/api/roles', (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: '인증 토큰이 필요합니다.'
-    });
-  }
-
-  res.json({
-    success: true,
-    roles: [
-      { 
-        id: 1, 
-        name: 'admin', 
-        displayName: '관리자', 
-        description: '시스템 전체 관리 권한',
-        permissions: ['read', 'write', 'delete', 'admin']
-      },
-      { 
-        id: 2, 
-        name: 'manager', 
-        displayName: '매니저', 
-        description: '프로젝트 관리 권한',
-        permissions: ['read', 'write', 'manage']
-      },
-      { 
-        id: 3, 
-        name: 'user', 
-        displayName: '사용자', 
-        description: '기본 사용자 권한',
-        permissions: ['read', 'write']
-      },
-      { 
-        id: 4, 
-        name: 'worker', 
-        displayName: '작업자', 
-        description: '작업 수행 권한',
-        permissions: ['read']
+    // 전체 통계 조회
+    const statsQuery = `
+      SELECT 
+        (SELECT COUNT(*) FROM resources WHERE status = 'active') as resources_count,
+        (SELECT COUNT(*) FROM tasks WHERE status != 'completed') as active_tasks_count,
+        (SELECT COUNT(*) FROM tasks WHERE status = 'overdue' OR end_date < CURRENT_DATE) as overdue_tasks_count,
+        (SELECT COUNT(*) FROM tasks WHERE end_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days') as upcoming_deadlines_count
+    `;
+    
+    const stats = await db.queryRow(statsQuery);
+    
+    // 가장 부하가 높은 리소스들
+    const highLoadResourcesQuery = `
+      SELECT r.id, r.name, r.department, r.capacity_hours,
+             COALESCE(ra.total_allocated, 0) as current_load,
+             ROUND((COALESCE(ra.total_allocated, 0)::float / r.capacity_hours * 100), 2) as utilization
+      FROM resources r
+      LEFT JOIN (
+        SELECT resource_id, SUM(allocated_hours) as total_allocated
+        FROM resource_assignments ra
+        JOIN tasks t ON ra.task_id = t.id
+        WHERE t.status IN ('pending', 'in_progress')
+        GROUP BY resource_id
+      ) ra ON r.id = ra.resource_id
+      WHERE r.status = 'active'
+      ORDER BY utilization DESC NULLS LAST
+      LIMIT 3
+    `;
+    
+    const highLoadResources = await db.queryRows(highLoadResourcesQuery);
+    
+    // 부하가 낮은 리소스들
+    const lowLoadResourcesQuery = `
+      SELECT r.id, r.name, r.department, r.capacity_hours,
+             COALESCE(ra.total_allocated, 0) as current_load,
+             ROUND((COALESCE(ra.total_allocated, 0)::float / r.capacity_hours * 100), 2) as utilization
+      FROM resources r
+      LEFT JOIN (
+        SELECT resource_id, SUM(allocated_hours) as total_allocated
+        FROM resource_assignments ra
+        JOIN tasks t ON ra.task_id = t.id
+        WHERE t.status IN ('pending', 'in_progress')
+        GROUP BY resource_id
+      ) ra ON r.id = ra.resource_id
+      WHERE r.status = 'active'
+      ORDER BY utilization ASC NULLS FIRST
+      LIMIT 3
+    `;
+    
+    const lowLoadResources = await db.queryRows(lowLoadResourcesQuery);
+    
+    // 다가오는 마감일
+    const upcomingDeadlinesQuery = `
+      SELECT t.id, t.name, t.end_date as deadline, t.priority,
+             r.name as resource_name
+      FROM tasks t
+      LEFT JOIN resources r ON t.assigned_to = r.id
+      WHERE t.status IN ('pending', 'in_progress') 
+        AND t.end_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '14 days'
+      ORDER BY t.end_date ASC
+      LIMIT 5
+    `;
+    
+    const upcomingDeadlines = await db.queryRows(upcomingDeadlinesQuery);
+    
+    // 최근 알림 (최적화 관련)
+    const recentOptimizationsQuery = `
+      SELECT id, title as description, created_at as timestamp
+      FROM notifications
+      WHERE type = 'optimization'
+      ORDER BY created_at DESC
+      LIMIT 3
+    `;
+    
+    const recentOptimizations = await db.queryRows(recentOptimizationsQuery);
+    
+    // 전체 부하율 계산
+    const totalCapacity = highLoadResources.concat(lowLoadResources)
+      .reduce((sum, r) => sum + r.capacity_hours, 0);
+    const totalAllocated = highLoadResources.concat(lowLoadResources)
+      .reduce((sum, r) => sum + r.current_load, 0);
+    const overallLoad = totalCapacity > 0 ? Math.round((totalAllocated / totalCapacity) * 100) : 0;
+    
+    res.json({
+      success: true,
+      data: {
+        overallLoad: overallLoad,
+        resourcesCount: stats.resources_count || 0,
+        tasksCount: stats.active_tasks_count || 0,
+        criticalTasks: highLoadResources.filter(r => r.utilization > 90).length,
+        overdueTasksCount: stats.overdue_tasks_count || 0,
+        upcomingDeadlinesCount: stats.upcoming_deadlines_count || 0,
+        mostLoadedResources: highLoadResources.map(r => ({
+          id: r.id,
+          name: r.name,
+          utilization: Math.round(r.utilization || 0),
+          capacity: r.capacity_hours,
+          department: r.department
+        })),
+        leastLoadedResources: lowLoadResources.map(r => ({
+          id: r.id,
+          name: r.name,
+          utilization: Math.round(r.utilization || 0),
+          capacity: r.capacity_hours,
+          department: r.department
+        })),
+        recentOptimizations: recentOptimizations.map(opt => ({
+          id: opt.id,
+          timestamp: opt.timestamp,
+          description: opt.description
+        })),
+        upcomingDeadlines: upcomingDeadlines.map(task => ({
+          id: task.id,
+          name: task.name,
+          resourceName: task.resource_name || '미할당',
+          deadline: task.deadline,
+          priority: task.priority
+        })),
+        heatmapData: [] // 추후 구현
       }
-    ]
-  });
-});
-
-// 알림 목록 API
-app.get('/api/notifications', (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
+    });
+    
+  } catch (error) {
+    console.error('❌ 대시보드 데이터 조회 오류:', error);
+    res.status(500).json({
       success: false,
-      message: '인증 토큰이 필요합니다.'
+      message: '대시보드 데이터 조회 중 오류가 발생했습니다.'
     });
   }
-
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  
-  const notifications = [
-    {
-      id: 1,
-      type: 'deadline',
-      title: '마감일 임박',
-      message: 'UI 디자인 완료 작업이 내일 마감입니다.',
-      isRead: false,
-      createdAt: '2025-05-26T10:30:00Z',
-      relatedTaskId: 101
-    },
-    {
-      id: 2,
-      type: 'overload',
-      title: '리소스 과부하 경고',
-      message: '김철수님의 작업 부하가 95%에 도달했습니다.',
-      isRead: false,
-      createdAt: '2025-05-26T09:15:00Z',
-      relatedResourceId: 1
-    },
-    {
-      id: 3,
-      type: 'optimization',
-      title: '최적화 완료',
-      message: '프로젝트 A 일정이 성공적으로 최적화되었습니다.',
-      isRead: true,
-      createdAt: '2025-05-25T16:20:00Z'
-    },
-    {
-      id: 4,
-      type: 'system',
-      title: '시스템 업데이트',
-      message: '새로운 기능이 추가되었습니다.',
-      isRead: true,
-      createdAt: '2025-05-24T14:00:00Z'
-    }
-  ];
-
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const paginatedNotifications = notifications.slice(startIndex, endIndex);
-
-  res.json({
-    success: true,
-    data: paginatedNotifications,
-    pagination: {
-      page,
-      limit,
-      total: notifications.length,
-      totalPages: Math.ceil(notifications.length / limit)
-    },
-    unreadCount: notifications.filter(n => !n.isRead).length
-  });
-});
-
-// 알림 설정 API
-app.get('/api/notifications/settings', (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: '인증 토큰이 필요합니다.'
-    });
-  }
-
-  res.json({
-    success: true,
-    settings: {
-      emailNotifications: true,
-      pushNotifications: true,
-      smsNotifications: false,
-      notificationTypes: {
-        deadlines: true,
-        overload: true,
-        optimization: true,
-        system: false
-      }
-    }
-  });
-});
-
-// 알림 설정 업데이트 API
-app.put('/api/notifications/settings', (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: '인증 토큰이 필요합니다.'
-    });
-  }
-
-  res.json({
-    success: true,
-    message: '알림 설정이 업데이트되었습니다.',
-    settings: req.body
-  });
-});
-
-// 알림 읽음 처리 API
-app.put('/api/notifications/:id/read', (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: '인증 토큰이 필요합니다.'
-    });
-  }
-
-  res.json({
-    success: true,
-    message: '알림이 읽음 처리되었습니다.'
-  });
-});
-
-// 작업 목록 API
-app.get('/api/tasks', (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: '인증 토큰이 필요합니다.'
-    });
-  }
-
-  res.json({
-    success: true,
-    tasks: [
-      {
-        id: 101,
-        name: 'UI 디자인 완료',
-        description: '메인 페이지 UI 디자인 작업',
-        status: 'in_progress',
-        priority: 'high',
-        assignedTo: '이영희',
-        resourceId: 2,
-        startDate: '2025-05-20',
-        endDate: '2025-06-01',
-        progress: 75,
-        estimatedHours: 40,
-        actualHours: 30
-      },
-      {
-        id: 102,
-        name: '백엔드 API 개발',
-        description: '사용자 관리 API 개발',
-        status: 'in_progress',
-        priority: 'medium',
-        assignedTo: '김철수',
-        resourceId: 1,
-        startDate: '2025-05-22',
-        endDate: '2025-06-03',
-        progress: 60,
-        estimatedHours: 60,
-        actualHours: 35
-      },
-      {
-        id: 103,
-        name: '테스트 자동화',
-        description: '단위 테스트 및 통합 테스트 작성',
-        status: 'pending',
-        priority: 'high',
-        assignedTo: '정혜린',
-        resourceId: 5,
-        startDate: '2025-05-28',
-        endDate: '2025-06-05',
-        progress: 0,
-        estimatedHours: 32,
-        actualHours: 0
-      }
-    ]
-  });
-});
-
-// 리소스 목록 API
-app.get('/api/resources', (req, res) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: '인증 토큰이 필요합니다.'
-    });
-  }
-
-  res.json({
-    success: true,
-    resources: [
-      {
-        id: 1,
-        name: '김철수',
-        email: 'kim@example.com',
-        department: '개발팀',
-        role: '시니어 개발자',
-        capacity: 40,
-        currentLoad: 38,
-        utilization: 95,
-        skills: ['React', 'Node.js', 'Python'],
-        status: 'active'
-      },
-      {
-        id: 2,
-        name: '이영희',
-        email: 'lee@example.com',
-        department: '디자인팀',
-        role: 'UI/UX 디자이너',
-        capacity: 40,
-        currentLoad: 35,
-        utilization: 88,
-        skills: ['Figma', 'Adobe XD', 'Photoshop'],
-        status: 'active'
-      },
-      {
-        id: 3,
-        name: '박지민',
-        email: 'park@example.com',
-        department: '개발팀',
-        role: '풀스택 개발자',
-        capacity: 40,
-        currentLoad: 33,
-        utilization: 82,
-        skills: ['Vue.js', 'Spring Boot', 'MySQL'],
-        status: 'active'
-      }
-    ]
-  });
-});
-
-// 에러 로깅
-app.post('/api/log-error', (req, res) => {
-  console.error('프론트엔드 오류:', req.body);
-  res.json({ success: true, message: 'Error logged' });
 });
 
 // 404 처리
@@ -562,21 +469,14 @@ app.use('*', (req, res) => {
       'POST /api/users/login',
       'GET /api/users/me',
       'GET /api/users',
-      'GET /api/dashboard/data',
-      'GET /api/roles',
-      'GET /api/notifications',
-      'GET /api/notifications/settings',
-      'PUT /api/notifications/settings',
-      'PUT /api/notifications/:id/read',
-      'GET /api/tasks',
-      'GET /api/resources'
+      'GET /api/dashboard/data'
     ]
   });
 });
 
 // 글로벌 에러 처리
 app.use((error, req, res, next) => {
-  console.error('글로벌 에러:', error);
+  console.error('❌ 글로벌 에러:', error);
   res.status(500).json({
     error: 'Internal Server Error',
     message: '서버 내부 오류가 발생했습니다.',
@@ -588,7 +488,7 @@ app.use((error, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 최소 서버 시작: 포트 ${PORT}`);
+  console.log(`🚀 PostgreSQL 연동 서버 시작: 포트 ${PORT}`);
   console.log(`🌍 환경: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📡 URL: http://localhost:${PORT}`);
   console.log(`🔗 Render URL: https://gantt-c1oh.onrender.com`);

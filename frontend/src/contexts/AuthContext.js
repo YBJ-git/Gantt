@@ -125,24 +125,41 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
+        console.log('🔍 AuthContext - 초기 인증 상태 확인 시작');
+        console.log('🔑 저장된 토큰:', !!token);
+        
         if (token) {
+          console.log('📡 현재 사용자 정보 조회 중...');
           // 토큰이 있는 경우 현재 유저 정보 가져오기
           const currentUser = await authService.getCurrentUser();
+          console.log('👤 사용자 정보 획득:', currentUser);
           setUser(currentUser);
+          
+          // 세션 타이머 시작
+          setSessionTimer();
+        } else {
+          console.log('❌ 토큰이 없음 - 미인증 상태');
+          setUser(null);
         }
       } catch (err) {
-        console.error('인증 상태 확인 중 오류:', err);
+        console.error('❌ 인증 상태 확인 중 오류:', err);
         // 토큰이 유효하지 않으면 로그아웃 처리
+        console.log('🧹 유효하지 않은 토큰 제거');
         localStorage.removeItem('token');
+        localStorage.removeItem('lastActivity');
         setToken(null);
         setUser(null);
       } finally {
+        console.log('✅ 인증 상태 확인 완료');
         setLoading(false);
       }
     };
 
-    checkAuthStatus();
-  }, [token]);
+    // 약간의 지연을 두어 토큰 검증이 완료되도록 함
+    setTimeout(() => {
+      checkAuthStatus();
+    }, 100);
+  }, [token, setSessionTimer]);
 
   // 로그인 함수
   const login = useCallback(async (username, password) => {
