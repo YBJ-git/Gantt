@@ -1,109 +1,206 @@
 /**
- * 간트 차트 시스템 백엔드 애플리케이션 (간단 버전)
- * WebSocket 제거하고 기본 Express 서버만 구동
+ * 최소한의 Express 서버 - 의존성 최소화
  */
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const compression = require('compression');
-const morgan = require('morgan');
-const { logger } = require('./src/utils/logger');
 
-// Express 앱 생성
 const app = express();
 
-// 기본 미들웨어 설정
-app.use(helmet()); // 보안 헤더 설정
-app.use(compression()); // 응답 압축
-app.use(express.json()); // JSON 파싱
-app.use(express.urlencoded({ extended: true })); // URL 인코딩된 데이터 파싱
-
-// CORS 설정 (간단 버전)
+// 기본 미들웨어
+app.use(express.json());
 app.use(cors({
-  origin: [
-    'https://tubular-vacherin-352fde.netlify.app',
-    'http://localhost:3000',
-    'http://localhost:3001'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+  origin: ['https://tubular-vacherin-352fde.netlify.app', 'http://localhost:3000'],
+  credentials: true
 }));
 
-// 로깅 설정
-if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('combined'));
-}
-
-// 기본 라우트 - 서버 상태 확인
+// 기본 라우트
 app.get('/', (req, res) => {
-  res.status(200).json({
+  res.json({
     status: 'OK',
-    message: '간트 차트 시스템 백엔드가 정상적으로 실행 중입니다',
+    message: '간트 차트 시스템 백엔드 실행 중',
     timestamp: new Date(),
-    version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development'
+    version: '1.0.0'
   });
 });
 
-// 헬스 체크 엔드포인트
+// 헬스체크
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
+  res.json({ 
     status: 'OK', 
-    message: 'Server is running', 
-    timestamp: new Date(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage()
+    message: 'Server is running',
+    timestamp: new Date()
   });
 });
 
-// API 라우터 설정
-try {
-  // 사용자 라우터
-  const userRoutes = require('./src/routes/userRoutes');
-  app.use('/api/users', userRoutes);
-  
-  // 헬스체크 라우터
-  const healthRoutes = require('./src/routes/healthRoutes');
-  app.use('/api/health', healthRoutes);
-  
-  // API 상태 엔드포인트
-  app.get('/api/status', (req, res) => {
-    res.status(200).json({
-      status: 'success',
-      message: 'API가 정상적으로 작동 중입니다',
-      timestamp: new Date(),
-      version: '1.0.0',
-      endpoints: {
-        '/api/users/login': 'POST - 사용자 로그인',
-        '/api/users/register': 'POST - 사용자 등록',
-        '/api/health/system': 'GET - 시스템 상태',
-        '/api/health/database': 'GET - 데이터베이스 상태'
+// API 기본 상태
+app.get('/api/status', (req, res) => {
+  res.json({
+    status: 'success',
+    message: 'API 정상 작동',
+    timestamp: new Date(),
+    endpoints: [
+      'GET /',
+      'GET /health', 
+      'GET /api/status',
+      'POST /api/users/login'
+    ]
+  });
+});
+
+// 간단한 헬스체크 API
+app.get('/api/health/system', (req, res) => {
+  res.json({
+    status: 'healthy',
+    server: {
+      status: 'running',
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      node_version: process.version
+    },
+    environment: {
+      node_env: process.env.NODE_ENV || 'production',
+      database_url_exists: !!process.env.DATABASE_URL,
+      port: process.env.PORT || 3000
+    },
+    database: {
+      status: process.env.DATABASE_URL ? 'configured' : 'not_configured',
+      note: process.env.DATABASE_URL ? 'DATABASE_URL is set' : 'DATABASE_URL is missing'
+    }
+  });
+});
+
+// 간단한 DB 상태 확인
+app.get('/api/health/database', (req, res) => {
+  if (!process.env.DATABASE_URL) {
+    return res.status(500).json({
+      status: 'Database connection failed',
+      error: 'DATABASE_URL environment variable is not set',
+      environment: {
+        database_url_exists: false,
+        node_env: process.env.NODE_ENV || 'production'
       }
     });
+  }
+  
+  res.json({
+    status: 'Database URL configured',
+    environment: {
+      database_url_exists: true,
+      node_env: process.env.NODE_ENV || 'production'
+    },
+    note: 'DATABASE_URL is set but connection not tested in this minimal version'
   });
-  
-  console.log('✅ API 라우터 로드 성공');
-  
-} catch (error) {
-  console.error('❌ API 라우터 로드 실패:', error.message);
-  
-  // 기본 라우터라도 제공
-  app.get('/api/status', (req, res) => {
-    res.status(500).json({
-      status: 'error',
-      message: 'API 라우터 로드 실패',
-      error: error.message,
-      timestamp: new Date()
-    });
-  });
-}
+});
 
-// 에러 로깅 엔드포인트
+// 로그인 엔드포인트 (간단 버전)
+app.post('/api/users/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    console.log('로그인 시도:', { username, timestamp: new Date() });
+    
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: '사용자명과 비밀번호를 입력해주세요.'
+      });
+    }
+    
+    // 간단한 하드코딩된 인증 (실제 DB 연결 없이)
+    const users = {
+      'admin': { password: 'admin123', role: 'admin', email: 'admin@example.com' },
+      'tester': { password: 'Test123', role: 'user', email: 'tester@example.com' },
+      'manager': { password: 'Manager123', role: 'manager', email: 'manager@example.com' },
+      'worker': { password: 'Worker123', role: 'worker', email: 'worker@example.com' }
+    };
+    
+    const user = users[username];
+    
+    if (!user || user.password !== password) {
+      return res.status(401).json({
+        success: false,
+        message: '아이디 또는 비밀번호가 올바르지 않습니다.'
+      });
+    }
+    
+    // 간단한 토큰 생성 (실제 JWT 없이)
+    const token = Buffer.from(`${username}:${Date.now()}`).toString('base64');
+    
+    console.log('로그인 성공:', { username, role: user.role });
+    
+    res.json({
+      success: true,
+      message: '로그인 성공',
+      token: token,
+      user: {
+        id: 1,
+        username: username,
+        email: user.email,
+        role: user.role
+      }
+    });
+    
+  } catch (error) {
+    console.error('로그인 오류:', error);
+    res.status(500).json({
+      success: false,
+      message: '서버 오류가 발생했습니다.'
+    });
+  }
+});
+
+// 사용자 정보 조회 (간단 버전)
+app.get('/api/users/me', (req, res) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({
+      success: false,
+      message: '인증 토큰이 필요합니다.'
+    });
+  }
+  
+  res.json({
+    success: true,
+    user: {
+      id: 1,
+      username: 'admin',
+      email: 'admin@example.com',
+      firstName: '관리자',
+      lastName: '계정',
+      role: 'admin',
+      createdAt: new Date()
+    }
+  });
+});
+
+// 모든 사용자 조회 (간단 버전)
+app.get('/api/users', (req, res) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({
+      success: false,
+      message: '인증 토큰이 필요합니다.'
+    });
+  }
+  
+  res.json({
+    success: true,
+    count: 4,
+    users: [
+      { id: 1, username: 'admin', email: 'admin@example.com', role: 'admin', status: 'active' },
+      { id: 2, username: 'tester', email: 'tester@example.com', role: 'user', status: 'active' },
+      { id: 3, username: 'manager', email: 'manager@example.com', role: 'manager', status: 'active' },
+      { id: 4, username: 'worker', email: 'worker@example.com', role: 'worker', status: 'active' }
+    ]
+  });
+});
+
+// 에러 로깅
 app.post('/api/log-error', (req, res) => {
-  const { error, stack, timestamp } = req.body;
-  console.error('프론트엔드 오류:', { error, stack, timestamp });
-  res.status(200).json({ success: true, message: 'Error logged' });
+  console.error('프론트엔드 오류:', req.body);
+  res.json({ success: true, message: 'Error logged' });
 });
 
 // 404 처리
@@ -112,13 +209,15 @@ app.use('*', (req, res) => {
     error: 'Not Found',
     message: `경로를 찾을 수 없습니다: ${req.method} ${req.originalUrl}`,
     timestamp: new Date(),
-    availableEndpoints: [
+    available_endpoints: [
       'GET /',
-      'GET /health', 
+      'GET /health',
       'GET /api/status',
-      'POST /api/users/login',
       'GET /api/health/system',
-      'GET /api/health/database'
+      'GET /api/health/database',
+      'POST /api/users/login',
+      'GET /api/users/me',
+      'GET /api/users'
     ]
   });
 });
@@ -126,64 +225,31 @@ app.use('*', (req, res) => {
 // 글로벌 에러 처리
 app.use((error, req, res, next) => {
   console.error('글로벌 에러:', error);
-  
-  res.status(error.status || 500).json({
-    error: error.name || 'Internal Server Error',
-    message: error.message || '서버 내부 오류가 발생했습니다',
-    timestamp: new Date(),
-    path: req.originalUrl
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: '서버 내부 오류가 발생했습니다.',
+    timestamp: new Date()
   });
 });
 
 // 서버 시작
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, async () => {
-  console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다`);
+app.listen(PORT, () => {
+  console.log(`🚀 최소 서버 시작: 포트 ${PORT}`);
   console.log(`🌍 환경: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`📡 BASE URL: http://localhost:${PORT}`);
-  
-  // 데이터베이스 초기화 시도
-  try {
-    console.log('🔄 데이터베이스 초기화 시도...');
-    const db = require('./src/config/database');
-    const DatabaseInitializer = require('./src/utils/DatabaseInitializer');
-    const dbInitializer = new DatabaseInitializer(db);
-    await dbInitializer.initialize();
-    console.log('✅ 데이터베이스 초기화 완료');
-  } catch (error) {
-    console.error('❌ 데이터베이스 초기화 실패:', error.message);
-    console.log('⚠️ 데이터베이스 없이 서버 계속 실행');
-  }
-  
-  console.log('🎉 서버 준비 완료!');
+  console.log(`📡 URL: http://localhost:${PORT}`);
+  console.log(`🔗 Render URL: https://gantt-c1oh.onrender.com`);
+  console.log(`💾 DATABASE_URL 존재: ${!!process.env.DATABASE_URL}`);
+  console.log('✅ 서버 준비 완료!');
 });
 
-// 예기치 않은 오류 처리
+// 에러 처리
 process.on('uncaughtException', (error) => {
   console.error('❌ 예기치 않은 예외:', error);
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
   console.error('❌ 처리되지 않은 프로미스 거부:', reason);
 });
-
-// 우아한 종료 처리
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM 신호 수신, 서버 종료 중...');
-  server.close(() => {
-    console.log('✅ 서버가 정상적으로 종료되었습니다');
-    process.exit(0);
-  });
-});
-
-process.on('SIGINT', () => {
-  console.log('🛑 SIGINT 신호 수신, 서버 종료 중...');
-  server.close(() => {
-    console.log('✅ 서버가 정상적으로 종료되었습니다');
-    process.exit(0);
-  });
-});
-
-module.exports = app;
