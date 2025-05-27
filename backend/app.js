@@ -133,7 +133,7 @@ app.post('/api/users/login', async (req, res) => {
       message: '로그인 성공',
       token: token,
       user: {
-        id: 1,
+        id: Object.keys(users).indexOf(username) + 1,
         username: username,
         email: user.email,
         role: user.role
