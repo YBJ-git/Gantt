@@ -4,10 +4,26 @@
 const { Pool } = require('pg');
 
 // 환경변수에서 데이터베이스 설정 가져오기
-const dbConfig = {
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-};
+let dbConfig;
+
+if (process.env.DATABASE_URL) {
+  // DATABASE_URL이 있으면 우선 사용 (Render 환경)
+  dbConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  };
+} else {
+  // 개별 환경변수로 연결 설정 (로컬 환경)
+  dbConfig = {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'my_project_db',
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+    max: parseInt(process.env.DB_CONNECTION_LIMIT) || 20
+  };
+}
 
 console.log('🔧 데이터베이스 설정:', {
   hasConnectionString: !!dbConfig.connectionString,

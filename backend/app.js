@@ -49,11 +49,19 @@ app.get('/', (req, res) => {
   });
 });
 
-// 헬스체크
+// 헬스체크 (Render 호환)
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     message: 'Server is running with PostgreSQL',
+    timestamp: new Date()
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'API Server is running with PostgreSQL',
     timestamp: new Date()
   });
 });
