@@ -83,6 +83,25 @@ const Dashboard = () => {
     heatmapData: data?.heatmapData || []
   };
 
+  // 간트 차트를 위한 데이터 (추후 실제 API 연동 예정)
+  const ganttChartData = {
+    resources: [
+      { id: 1, name: '김철수', title: '개발팀', load: 140, tasks: 2 },
+      { id: 2, name: '이영희', title: '디자인팀', load: 140, tasks: 2 },
+      { id: 3, name: '박지민', title: '개발팀', load: 170, tasks: 2 },
+      { id: 4, name: '최용주', title: '개발팀', load: 285, tasks: 4 }
+    ],
+    tasks: safeData.upcomingDeadlines.map((task, index) => ({
+      id: task.id,
+      text: task.name,
+      resourceId: index + 1,
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: task.deadline,
+      progress: Math.floor(Math.random() * 100),
+      dependencies: []
+    }))
+  };
+
   // 컴포넌트 안전성 검사
   if (!dispatch || typeof useSelector !== 'function') {
     return (
