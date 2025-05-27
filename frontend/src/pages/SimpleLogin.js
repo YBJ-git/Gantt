@@ -12,7 +12,7 @@ const SimpleLogin = () => {
     
     try {
       // 환경변수 확인
-      const apiUrl = process.env.REACT_APP_API_URL;
+      const apiUrl = process.env.REACT_APP_API_BASE_URL || 'https://gantt-c1oh.onrender.com';
       setResult(prev => prev + `\n환경변수 API URL: ${apiUrl}`);
       
       // Health check 먼저 시도

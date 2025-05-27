@@ -24,7 +24,11 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [ganttViewMode, setGanttViewMode] = useState('week');
-  const { data: dashboardData, loading, error } = useSelector(state => state.dashboard || {});
+  
+  // Redux state를 안전하게 가져오기
+  const reduxState = useSelector(state => state);
+  const dashboardState = reduxState?.dashboard || {};
+  const { data: dashboardData, loading = false, error = null } = dashboardState;
   
   useEffect(() => {
     // Redux 액션을 통해 데이터 가져오기
@@ -146,6 +150,21 @@ const Dashboard = () => {
 
   const data = dashboardData || mockData;
 
+  // 안전한 데이터 접근을 위한 기본값 설정
+  const safeData = {
+    overallLoad: data?.overallLoad || 0,
+    resourcesCount: data?.resourcesCount || 0,
+    tasksCount: data?.tasksCount || 0,
+    criticalTasks: data?.criticalTasks || 0,
+    overdueTasksCount: data?.overdueTasksCount || 0,
+    upcomingDeadlinesCount: data?.upcomingDeadlinesCount || 0,
+    mostLoadedResources: data?.mostLoadedResources || [],
+    leastLoadedResources: data?.leastLoadedResources || [],
+    recentOptimizations: data?.recentOptimizations || [],
+    upcomingDeadlines: data?.upcomingDeadlines || [],
+    heatmapData: data?.heatmapData || []
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -169,9 +188,9 @@ const Dashboard = () => {
           <Card className="stat-card">
             <Statistic 
               title="전체 리소스 부하율" 
-              value={data.overallLoad} 
+              value={safeData.overallLoad} 
               suffix="%" 
-              valueStyle={{ color: data.overallLoad > 80 ? '#cf1322' : '#3f8600' }}
+              valueStyle={{ color: safeData.overallLoad > 80 ? '#cf1322' : '#3f8600' }}
               prefix={<BarChartOutlined />}
             />
           </Card>
@@ -180,7 +199,7 @@ const Dashboard = () => {
           <Card className="stat-card">
             <Statistic 
               title="리소스 수" 
-              value={data.resourcesCount}
+              value={safeData.resourcesCount}
               prefix={<TeamOutlined />}
             />
           </Card>
@@ -189,7 +208,7 @@ const Dashboard = () => {
           <Card className="stat-card">
             <Statistic 
               title="활성 작업 수" 
-              value={data.tasksCount}
+              value={safeData.tasksCount}
               prefix={<CalendarOutlined />}
             />
           </Card>
@@ -198,7 +217,7 @@ const Dashboard = () => {
           <Card className="stat-card warning-card">
             <Statistic 
               title="부하 임계치 초과" 
-              value={data.criticalTasks}
+              value={safeData.criticalTasks}
               valueStyle={{ color: '#cf1322' }}
               prefix={<WarningOutlined />}
             />
@@ -281,7 +300,7 @@ const Dashboard = () => {
         <Col xs={24} lg={16}>
           <Card title="리소스 부하 현황" className="load-status-card">
             <Row gutter={[16, 16]}>
-              {data.mostLoadedResources.map(resource => (
+              {safeData.mostLoadedResources.map(resource => (
                 <Col xs={24} sm={8} key={resource.id}>
                   <Card 
                     size="small" 
@@ -319,20 +338,20 @@ const Dashboard = () => {
               <div className="status-item overdue">
                 <WarningOutlined />
                 <span className="status-text">
-                  기한 초과: {data.overdueTasksCount}건
+                  기한 초과: {safeData.overdueTasksCount}건
                 </span>
               </div>
               <div className="status-item upcoming">
                 <ClockCircleOutlined />
                 <span className="status-text">
-                  7일 내 마감: {data.upcomingDeadlinesCount}건
+                  7일 내 마감: {safeData.upcomingDeadlinesCount}건
                 </span>
               </div>
             </div>
             
             <Divider orientation="left">다가오는 마감일</Divider>
             <div className="deadline-list">
-              {data.upcomingDeadlines.map(task => (
+              {safeData.upcomingDeadlines.map(task => (
                 <div className="deadline-item" key={task.id} onClick={() => navigate(`/tasks/${task.id}`)}>
                   <div className="deadline-info">
                     <div className="task-name">{task.name}</div>
@@ -353,7 +372,7 @@ const Dashboard = () => {
         <Col xs={24} lg={16}>
           <Card title="부하 히트맵" className="heatmap-card">
             <LoadHeatmap 
-              data={data.heatmapData || []}
+              data={safeData.heatmapData}
               startDate="2025-05-01"
               endDate="2025-05-31"
               compact={true}
@@ -369,7 +388,7 @@ const Dashboard = () => {
         <Col xs={24} lg={8}>
           <Card title="최근 최적화 이력" className="optimization-history-card">
             <div className="history-list">
-              {data.recentOptimizations?.map(opt => (
+              {safeData.recentOptimizations.map(opt => (
                 <div className="history-item" key={opt.id}>
                   <div className="history-icon">
                     <CheckCircleOutlined />

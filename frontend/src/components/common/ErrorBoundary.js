@@ -42,28 +42,15 @@ class ErrorBoundary extends React.Component {
     }
 
     // 프로덕션 환경에서는 외부 로깅 서비스로 전송
+    // 현재는 콘솔 로그만 사용 (추후 Sentry 등 외부 서비스 연동 가능)
     if (process.env.NODE_ENV === 'production') {
-      // 예: Sentry.captureException(error, { extra: errorInfo });
-      
-      // API URL 설정
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-      
-      // 간단한 API 호출 예시
-      fetch(`${apiUrl}/log-error`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error: error.message,
-          stack: error.stack,
-          componentStack: errorInfo.componentStack,
-          timestamp: new Date().toISOString(),
-          userAgent: navigator.userAgent,
-          url: window.location.href
-        })
-      }).catch(err => {
-        console.error('Failed to log error:', err);
+      console.error('Production Error:', {
+        error: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
       });
     }
   };
