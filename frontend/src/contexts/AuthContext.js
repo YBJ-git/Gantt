@@ -135,7 +135,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const { token, user } = await authService.login(username, password);
+      const response = await authService.login(username, password);
+      const { token, user } = response;
       
       // 로컬 스토리지에 토큰 저장
       localStorage.setItem('token', token);
@@ -152,7 +153,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setSessionTimer]);
   
   // 소셜 로그인 함수
   const socialLogin = useCallback(async (provider, token) => {
@@ -160,7 +161,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const { token: authToken, user } = await authService.socialLogin(provider, token);
+      const response = await authService.socialLogin(provider, token);
+      const { token: authToken, user } = response;
       
       // 로컬 스토리지에 토큰 저장
       localStorage.setItem('token', authToken);
@@ -177,7 +179,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setSessionTimer]);
   
   // 소셜 로그인 URL 가져오기
   const getSocialLoginUrl = useCallback((provider) => {
