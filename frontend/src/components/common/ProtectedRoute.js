@@ -1,12 +1,14 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from 'contexts/AuthContext';
-import { useRole } from 'contexts/RoleContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useRole } from '../../contexts/RoleContext';
 
 /**
  * 권한 기반 보호된 라우트 컴포넌트
  * @param {Object} props - 컴포넌트 속성
- * @param {React.Component} props.component - 렌더링할 컴포넌트
+ * @param {React.Component} [props.component] - 렌더링할 컴포넌트 (deprecated, children 사용 권장)
+ * @param {React.ReactNode} [props.children] - 렌더링할 자식 컴포넌트
+ * @param {string|string[]} [props.requiredRoles] - 필요한 역할 (단일 역할 또는 역할 배열)
  * @param {string|string[]} [props.requiredPermission] - 필요한 권한 (단일 권한 또는 권한 배열)
  * @param {boolean} [props.requireAll=false] - 여러 권한이 모두 필요한지 여부 (true: AND, false: OR)
  * @param {boolean} [props.requireAuth=true] - 인증이 필요한지 여부
@@ -14,6 +16,8 @@ import { useRole } from 'contexts/RoleContext';
  */
 const ProtectedRoute = ({
   component: Component,
+  children,
+  requiredRoles,
   requiredPermission,
   requireAll = false,
   requireAuth = true,
@@ -30,6 +34,16 @@ const ProtectedRoute = ({
   // 인증이 필요한 경우 로그인 여부 확인
   if (requireAuth && !isAuthenticated) {
     return <Navigate to="/login" state={{ from: window.location.pathname }} />;
+  }
+  
+  // 역할 확인 (간단한 역할 기반 접근 제어)
+  if (requiredRoles && user) {
+    const userRole = user.role;
+    const rolesArray = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+    
+    if (!rolesArray.includes(userRole)) {
+      return <Navigate to="/access-denied" />;
+    }
   }
   
   // 권한 확인이 필요한 경우
@@ -53,7 +67,11 @@ const ProtectedRoute = ({
   }
   
   // 모든 조건을 충족하면 요청된 컴포넌트 렌더링
-  return <Component {...rest} />;
+  if (Component) {
+    return <Component {...rest} />;
+  }
+  
+  return children || null;
 };
 
 export default ProtectedRoute;

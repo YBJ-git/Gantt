@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 // API URL 설정
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'https://gantt-c1oh.onrender.com';
+
+console.log('🌍 DashboardService - API_URL:', API_URL);
+console.log('🌍 DashboardService - REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
 
 // Axios 인스턴스 생성
 const api = axios.create({

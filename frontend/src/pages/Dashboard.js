@@ -42,13 +42,27 @@ const Dashboard = () => {
   const [ganttViewMode, setGanttViewMode] = useState('week');
   
   // Redux state를 안전하게 가져오기
-  const reduxState = useSelector(state => state);
+  const reduxState = useSelector(state => {
+    // state가 undefined일 경우를 대비
+    if (!state || typeof state !== 'object') {
+      console.warn('Redux state is not properly initialized');
+      return {};
+    }
+    return state;
+  });
+  
   const dashboardState = reduxState?.dashboard || {};
   const { data: dashboardData, loading = false, error = null } = dashboardState;
   
   useEffect(() => {
-    // Redux 액션을 통해 데이터 가져오기
-    dispatch(fetchDashboardData());
+    // Redux 액션을 통해 데이터 가져오기 (안전하게)
+    try {
+      if (dispatch && typeof dispatch === 'function') {
+        dispatch(fetchDashboardData());
+      }
+    } catch (error) {
+      console.error('Dashboard dispatch error:', error);
+    }
   }, [dispatch]);
 
   // 더미 데이터 생성
@@ -180,6 +194,23 @@ const Dashboard = () => {
     upcomingDeadlines: data?.upcomingDeadlines || [],
     heatmapData: data?.heatmapData || []
   };
+
+  // 컴포넌트 안전성 검사
+  if (!dispatch || typeof useSelector !== 'function') {
+    return (
+      <div className="dashboard-error">
+        <Title level={2}>시스템 초기화 중...</Title>
+        <Text type="secondary">
+          대시보드를 로드하는 중입니다. 잠시만 기다려 주세요.
+        </Text>
+        <div style={{ marginTop: 20 }}>
+          <Button onClick={() => window.location.reload()}>
+            페이지 새로고침
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
