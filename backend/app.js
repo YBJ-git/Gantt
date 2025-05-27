@@ -157,19 +157,39 @@ app.post('/api/users/login', async (req, res) => {
       });
     }
     
-    // 데이터베이스에서 사용자 조회
+    // 데이터베이스에서 사용자 조회 (단순화된 쿼리)
     const userQuery = `
-      SELECT u.*, r.name as role_name 
-      FROM users u
-      LEFT JOIN user_roles ur ON u.id = ur.user_id
-      LEFT JOIN roles r ON ur.role_id = r.id
-      WHERE u.username = $1 AND u.password_hash = $2 AND u.status = 'active'
+      SELECT * FROM users 
+      WHERE username = $1 AND status = 'active'
     `;
     
-    const user = await db.queryRow(userQuery, [username, password]);
+    const user = await db.queryRow(userQuery, [username]);
     
     if (!user) {
-      console.log('❌ 로그인 실패:', { username, reason: 'invalid_credentials' });
+      console.log('❌ 로그인 실패:', { username, reason: 'user_not_found' });
+      return res.status(401).json({
+        success: false,
+        message: '아이디 또는 비밀번호가 올바르지 않습니다.'
+      });
+    }
+    
+    // 비밀번호 검증 (해시된 비밀번호인지 평문인지 확인)
+    let passwordMatch = false;
+    
+    if (user.password && user.password.startsWith('$2b$')) {
+      // bcrypt 해시된 비밀번호
+      const bcrypt = require('bcrypt');
+      passwordMatch = await bcrypt.compare(password, user.password);
+    } else if (user.password_hash === password) {
+      // 평문 비밀번호 (시드 데이터)
+      passwordMatch = true;
+    } else if (user.password === password) {
+      // password 필드에 평문 저장된 경우
+      passwordMatch = true;
+    }
+    
+    if (!passwordMatch) {
+      console.log('❌ 로그인 실패:', { username, reason: 'invalid_password' });
       return res.status(401).json({
         success: false,
         message: '아이디 또는 비밀번호가 올바르지 않습니다.'
@@ -177,12 +197,16 @@ app.post('/api/users/login', async (req, res) => {
     }
     
     // 마지막 로그인 시간 업데이트
-    await db.query('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+    try {
+      await db.query('UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+    } catch (updateError) {
+      console.log('⚠️ 로그인 시간 업데이트 실패:', updateError.message);
+    }
     
     // 간단한 토큰 생성
     const token = Buffer.from(`${username}:${Date.now()}`).toString('base64');
     
-    console.log('✅ 로그인 성공:', { username, role: user.role_name, userId: user.id });
+    console.log('✅ 로그인 성공:', { username, role: user.role, userId: user.id });
     
     res.json({
       success: true,
@@ -194,7 +218,7 @@ app.post('/api/users/login', async (req, res) => {
         email: user.email,
         firstName: user.first_name,
         lastName: user.last_name,
-        role: user.role_name || 'user',
+        role: user.role || 'user',
         department: user.department,
         position: user.position
       }
@@ -226,13 +250,10 @@ app.get('/api/users/me', async (req, res) => {
     const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
     const [username] = decodedToken.split(':');
     
-    // 데이터베이스에서 사용자 정보 조회
+    // 데이터베이스에서 사용자 정보 조회 (단순화된 쿼리)
     const userQuery = `
-      SELECT u.*, r.name as role_name 
-      FROM users u
-      LEFT JOIN user_roles ur ON u.id = ur.user_id
-      LEFT JOIN roles r ON ur.role_id = r.id
-      WHERE u.username = $1 AND u.status = 'active'
+      SELECT * FROM users 
+      WHERE username = $1 AND status = 'active'
     `;
     
     const user = await db.queryRow(userQuery, [username]);
@@ -252,7 +273,7 @@ app.get('/api/users/me', async (req, res) => {
         email: user.email,
         firstName: user.first_name,
         lastName: user.last_name,
-        role: user.role_name || 'user',
+        role: user.role || 'user',
         department: user.department,
         position: user.position,
         lastLoginAt: user.last_login_at,
