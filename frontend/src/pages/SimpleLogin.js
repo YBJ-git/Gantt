@@ -28,7 +28,7 @@ const SimpleLogin = () => {
       }
       
       // 로그인 시도
-      const loginResponse = await fetch(`${apiUrl}/users/login`, {
+      const loginResponse = await fetch(`${apiUrl}/api/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
