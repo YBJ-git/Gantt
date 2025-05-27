@@ -23,7 +23,15 @@ router.get('/status', (req, res) => {
     status: 'success',
     message: '작업 부하 최적화 API가 정상적으로 작동 중입니다',
     timestamp: new Date(),
-    version: '1.0.0'
+    version: '1.0.0',
+    routes: {
+      '/health': '헬스체크 라우터',
+      '/users': '사용자 관리 라우터',
+      '/users/login': 'POST - 로그인 엔드포인트',
+      '/tasks': '작업 관리 라우터',
+      '/dashboard': '대시보드 라우터',
+      '/resources': '리소스 관리 라우터'
+    }
   });
 });
 

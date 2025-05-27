@@ -56,15 +56,26 @@ const registerWorker = asyncErrorHandler(async (req, res) => {
 const loginUser = asyncErrorHandler(async (req, res) => {
   const { username, password } = req.body;
   
+  // 디버깅 정보 로깅
+  logger.info('로그인 시도:', {
+    username,
+    timestamp: new Date(),
+    userAgent: req.get('User-Agent'),
+    origin: req.get('Origin'),
+    ip: req.ip
+  });
+  
   // 사용자 인증
   const user = await userService.authenticateUser(username, password);
   
   if (!user) {
+    logger.warn('로그인 실패 - 잘못된 인증 정보:', { username });
     throw new AuthenticationError('아이디 또는 비밀번호가 올바르지 않습니다.');
   }
   
   // 비활성화된 계정 체크
   if (user.status === 'inactive') {
+    logger.warn('로그인 실패 - 비활성화된 계정:', { username });
     throw new AuthenticationError('비활성화된 계정입니다. 관리자에게 문의하세요.');
   }
   
@@ -74,6 +85,12 @@ const loginUser = asyncErrorHandler(async (req, res) => {
     config.jwt.secret,
     { expiresIn: config.jwt.expiresIn }
   );
+  
+  logger.info('로그인 성공:', {
+    userId: user.id,
+    username: user.username,
+    role: user.role
+  });
   
   res.status(200).json({
     success: true,
