@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
 import './SessionWarningModal.css';
 
 const SessionWarningModal = ({ 
@@ -8,7 +7,6 @@ const SessionWarningModal = ({
   onLogout, 
   warningTime = 300 // 5분(300초) 전 경고
 }) => {
-  const { extendSession } = useAuth();
   const [timeLeft, setTimeLeft] = useState(warningTime);
 
   useEffect(() => {
@@ -37,7 +35,6 @@ const SessionWarningModal = ({
   };
 
   const handleExtendSession = () => {
-    extendSession();
     onExtend();
   };
 

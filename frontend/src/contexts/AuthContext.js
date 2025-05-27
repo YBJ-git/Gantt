@@ -44,12 +44,19 @@ export const AuthProvider = ({ children }) => {
     const timeoutId = setTimeout(() => {
       setIsSessionExpired(true);
       setShowSessionWarning(false);
-      logout();
+      
+      // 직접 로그아웃 처리 (순환 참조 방지)
+      localStorage.removeItem('token');
+      localStorage.removeItem('lastActivity');
+      setToken(null);
+      setUser(null);
+      setIsSessionExpired(false);
+      setShowSessionWarning(false);
     }, SESSION_TIMEOUT);
 
     setSessionWarningId(warningId);
     setSessionTimeoutId(timeoutId);
-  }, [sessionTimeoutId, sessionWarningId]);
+  }, []);
 
   // 세션 연장 함수
   const extendSession = useCallback(() => {
@@ -67,7 +74,15 @@ export const AuthProvider = ({ children }) => {
       const timeDiff = Date.now() - parseInt(lastActivity);
       if (timeDiff > SESSION_TIMEOUT) {
         setIsSessionExpired(true);
-        logout();
+        
+        // 직접 로그아웃 처리 (순환 참조 방지)
+        localStorage.removeItem('token');
+        localStorage.removeItem('lastActivity');
+        setToken(null);
+        setUser(null);
+        setIsSessionExpired(false);
+        setShowSessionWarning(false);
+        
         return false;
       }
     }
@@ -135,19 +150,40 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
+      console.log('🔐 AuthContext - 로그인 시작');
       const response = await authService.login(username, password);
+      console.log('📦 AuthContext - 로그인 응답:', response);
+      
+      // 응답 구조 안전하게 처리
+      if (!response) {
+        throw new Error('로그인 응답이 없습니다');
+      }
+      
       const { token, user } = response;
+      console.log('🔑 AuthContext - 추출된 토큰:', token);
+      console.log('👤 AuthContext - 추출된 사용자:', user);
+      
+      if (!token) {
+        throw new Error('토큰이 응답에 포함되지 않았습니다');
+      }
+      
+      if (!user) {
+        throw new Error('사용자 정보가 응답에 포함되지 않았습니다');
+      }
       
       // 로컬 스토리지에 토큰 저장
       localStorage.setItem('token', token);
       setToken(token);
       setUser(user);
       
+      console.log('✅ AuthContext - 로그인 처리 완료');
+      
       // 세션 타이머 시작
       setSessionTimer();
       
       return user;
     } catch (err) {
+      console.error('❌ AuthContext - 로그인 오류:', err);
       setError(err.message || '로그인 중 오류가 발생했습니다.');
       throw err;
     } finally {
@@ -238,7 +274,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsSessionExpired(false);
     setShowSessionWarning(false);
-  }, [sessionTimeoutId, sessionWarningId]);
+  }, []);
 
   // 사용자 정보 업데이트 함수
   const updateUserProfile = useCallback(async (userData) => {
